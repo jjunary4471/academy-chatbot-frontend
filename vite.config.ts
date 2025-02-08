@@ -8,6 +8,7 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   server: {
+    host: '0.0.0.0',
     proxy: {
       '/api': {
         target: 'https://coipekj2sl.execute-api.ap-northeast-1.amazonaws.com',
