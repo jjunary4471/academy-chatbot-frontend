@@ -29,10 +29,30 @@ const getPersonalityIcon = (type: string) => {
 };
 
 const PersonalityDisplay = ({ primaryType, secondaryType }: { primaryType: string; secondaryType: string }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const student = location.state?.student;
+
   return (
     <button 
       className="flex items-center gap-2 hover:bg-blue-50 p-2 rounded-md transition-colors"
-      onClick={() => alert('상세 레포트 화면으로 이동')}
+      onClick={() => {
+        const mockReport = {
+          id: '1',
+          studentId: student.id,
+          testDate: '2024-03-15',
+          result: {
+            primaryType,
+            secondaryType
+          }
+        };
+        navigate('/personality-report', { 
+          state: { 
+            report: mockReport,
+            student
+          } 
+        });
+      }}
     >
       <div className="flex items-center gap-1">
         {getPersonalityIcon(primaryType)}
