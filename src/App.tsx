@@ -1,4 +1,4 @@
-import React from 'react';
+import { StrictMode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
@@ -7,6 +7,7 @@ import StudentMainPage from './components/StudentMainPage';
 import ParentMainPage from './components/ParentMainPage';
 import StudentReportList from './components/StudentReportList';
 import PersonalityReportDetail from './components/PersonalityReportDetail';
+import PersonalityTest from './components/PersonalityTest';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/parent-main" element={<ParentMainPage />} />
         <Route path="/student/:studentId/reports" element={<StudentReportList />} />
         <Route path="/personality-report" element={<PersonalityReportDetail />} />
+        <Route path="/personality-test" element={<PersonalityTest />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
