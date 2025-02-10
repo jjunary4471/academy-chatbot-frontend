@@ -46,6 +46,15 @@ export default function PersonalityReportDetail() {
   const location = useLocation();
   const { report, student } = location.state as LocationState;
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isStudent = user.role === 2;
+
+  const handleBack = () => {
+    if (isStudent) {
+      navigate('/student-main');
+    } else {
+      navigate(-1);
+    }
+  };
 
   // Personality type descriptions
   const typeDescriptions = {
@@ -93,7 +102,7 @@ export default function PersonalityReportDetail() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate(-1)}
+                onClick={handleBack}
                 className="text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="w-6 h-6" />
