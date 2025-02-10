@@ -5,6 +5,7 @@ import SignupPage from './components/SignupPage';
 import AdminPage from './components/AdminPage';
 import StudentMainPage from './components/StudentMainPage';
 import ParentMainPage from './components/ParentMainPage';
+import StudentReportList from './components/StudentReportList';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/student-main" element={<StudentMainPage />} />
         <Route path="/parent-main" element={<ParentMainPage />} />
+        <Route path="/student/:studentId/reports" element={<StudentReportList />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

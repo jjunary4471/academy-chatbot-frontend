@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   createColumnHelper,
   flexRender,
@@ -59,6 +60,7 @@ const PersonalityDisplay = ({ primaryType, secondaryType }: { primaryType?: stri
 };
 
 export default function AdminPage() {
+  const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [loading, setLoading] = useState(true);
@@ -93,18 +95,21 @@ export default function AdminPage() {
     }),
     columnHelper.accessor('id', {
       header: 'ID',
-      cell: info => info.getValue(),
+      cell: info => {
+        const student = students[info.row.index];
+        return (
+          <button 
+            className="text-blue-600 hover:underline font-medium"
+            onClick={() => navigate(`/student/${info.getValue()}/reports`, { state: { student } })}
+          >
+            {info.getValue()}
+          </button>
+        );
+      },
     }),
     columnHelper.accessor('name', {
       header: '성명',
-      cell: info => (
-        <button 
-          className="text-blue-600 hover:underline font-medium"
-          onClick={() => alert(`학생 상세정보: ${info.getValue()}`)}
-        >
-          {info.getValue()}
-        </button>
-      ),
+      cell: info => info.getValue(),
     }),
     columnHelper.accessor('admissionDate', {
       header: ({ column }) => (

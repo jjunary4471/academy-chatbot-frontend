@@ -28,3 +28,19 @@ export interface SignupForm {
   childId?: string;
   admissionDate?: string;
 }
+
+export interface PersonalityReport {
+  id: string;
+  studentId: string;
+  testDate: string;
+  result: {
+    primaryType: '벗꽃' | '복숭아' | '자두';
+    secondaryType: '디지털' | '아날로그';
+  };
+}
+
+export interface Parent {
+  id: string;
+  name: string;
+  email: string;
+}
