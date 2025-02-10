@@ -12,6 +12,7 @@ export default function SignupPage() {
     role: 2, // Default to STUDENT
     email: '',
     childId: '',
+    admissionDate: '',
   });
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +30,11 @@ export default function SignupPage() {
       // Remove childId if not PARENT
       if (formData.role !== 3) {
         delete payload.childId;
+      }
+
+      // Remove admissionDate if not STUDENT
+      if (formData.role !== 2) {
+        delete payload.admissionDate;
       }
 
       console.log('Sending signup request with payload:', payload);
@@ -141,6 +147,22 @@ export default function SignupPage() {
               <option value={3}>학부모 (PARENT)</option>
             </select>
           </div>
+
+          {formData.role === 2 && (
+            <div>
+              <label htmlFor="admissionDate" className="block text-sm font-medium text-gray-700 mb-1">
+                입학일
+              </label>
+              <input
+                id="admissionDate"
+                type="date"
+                required
+                value={formData.admissionDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, admissionDate: e.target.value }))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          )}
 
           {formData.role === 3 && (
             <div>

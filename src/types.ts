@@ -1,16 +1,22 @@
 export type UserRole = 'TEACHER' | 'STUDENT' | 'PARENT';
 
 export interface Student {
-  id: number;
-  userId: string;
+  id: string;
   name: string;
-  enrollmentDate: string;
-  studentType: string;
+  role: number;
+  email: string;
+  admissionDate: string;
+  personalityResult: {
+    primaryType?: '벗꽃' | '복숭아' | '자두';
+    secondaryType?: '디지털' | '아날로그';
+  };
 }
 
 export interface User {
   userId: string;
   role: UserRole;
+  academyId: string;
+  name: string;
 }
 
 export interface SignupForm {
@@ -20,4 +26,5 @@ export interface SignupForm {
   role: number;
   email: string;
   childId?: string;
+  admissionDate?: string;
 }
