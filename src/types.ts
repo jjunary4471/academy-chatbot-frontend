@@ -1,11 +1,17 @@
 export type UserRole = 'TEACHER' | 'STUDENT' | 'PARENT';
 
+export interface FamilyInfo {
+  parentId: string;
+  parentName: string;
+}
+
 export interface Student {
   id: string;
   name: string;
   role: number;
   email: string;
   admissionDate: string;
+  familyInfo?: FamilyInfo;
   personalityResult: {
     primaryType?: '벗꽃' | '복숭아' | '자두';
     secondaryType?: '디지털' | '아날로그';

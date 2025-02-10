@@ -17,6 +17,11 @@ interface Answer {
   answer: boolean;
 }
 
+interface PersonalityResult {
+  primaryType: '벗꽃' | '복숭아' | '자두' | '자두';
+  secondaryType: '디지털' | '아날로그';
+}
+
 export default function PersonalityTest() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -39,21 +44,77 @@ export default function PersonalityTest() {
     return sectionAnswers.length === QUESTIONS_PER_SECTION;
   };
 
+  const calculateFactorScore = (factor: string) => {
+    const factorQuestions = questions.filter(q => q.factor === factor);
+    const factorAnswers = answers.filter(a => 
+      factorQuestions.some(q => q.id === a.questionId && a.answer)
+    );
+    return factorAnswers.length;
+  };
+
+  const determinePersonalityType = (): PersonalityResult => {
+    const aScore = calculateFactorScore('A');
+    const bScore = calculateFactorScore('B');
+    const cScore = calculateFactorScore('C');
+    const dScore = calculateFactorScore('D');
+    const eScore = calculateFactorScore('E');
+
+    let primaryType: PersonalityResult['primaryType'];
+
+    // さくら (벗꽃)
+    if (aScore < 5 && bScore >= 5 && cScore >= 5 && dScore >= 5 && eScore < 5) {
+      primaryType = '벗꽃';
+    }
+    // うめ (복숭아)
+    else if (aScore >= 5 && bScore < 5 && cScore >= 5 && dScore >= 5 && eScore < 5) {
+      primaryType = '복숭아';
+    }
+    // もも (자두)
+    else if (aScore < 5 && bScore < 5 && cScore >= 5 && dScore < 5 && eScore >= 5) {
+      primaryType = '자두';
+    }
+    // すもも (자두)
+    else if (aScore >= 5 && bScore < 5 && cScore >= 5 && dScore < 5 && eScore >= 5) {
+      primaryType = '자두';
+    }
+    else {
+      // 기본값으로 가장 근접한 유형 선택
+      primaryType = '벗꽃';
+    }
+
+    // デジタル/アナログ 판정
+    const secondaryType: PersonalityResult['secondaryType'] = 
+      cScore > 10 ? '디지털' : '아날로그';
+
+    return { primaryType, secondaryType };
+  };
+
   const handleNext = () => {
     if (currentSection < SECTIONS.length - 1) {
       setCurrentSection(prev => prev + 1);
-      // 스크롤을 맨 위로 초기화
       window.scrollTo(0, 0);
     } else {
-      // TODO: Submit answers and navigate to results
-      navigate('/personality-report');
+      const result = determinePersonalityType();
+      const testDate = new Date().toISOString().split('T')[0];
+
+      // 결과 페이지로 이동
+      navigate('/personality-report', { 
+        state: { 
+          report: {
+            id: Date.now().toString(),
+            studentId: user.id,
+            testDate,
+            result
+          },
+          student: user
+        }
+      });
     }
   };
 
   const handlePrevious = () => {
     if (currentSection > 0) {
       setCurrentSection(prev => prev - 1);
-      // 스크롤을 맨 위로 초기화
       window.scrollTo(0, 0);
     }
   };

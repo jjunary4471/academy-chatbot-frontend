@@ -153,7 +153,11 @@ export default function StudentReportList() {
             
             <div className="bg-blue-50 p-4 rounded-lg">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">학부모 정보</h2>
-              <p className="text-gray-600">홍길동</p>
+              {student.familyInfo ? (
+                <p className="text-gray-600">{student.familyInfo.parentName}</p>
+              ) : (
+                <p className="text-gray-500 italic">등록된 학부모 정보가 없습니다</p>
+              )}
             </div>
           </div>
 
