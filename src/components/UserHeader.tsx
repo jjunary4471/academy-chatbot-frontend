@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, User, Users } from 'lucide-react';
+import { GraduationCap, User, Users, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface UserHeaderProps {
@@ -13,13 +13,13 @@ export default function UserHeader({ name, role }: UserHeaderProps) {
   const getRoleIcon = () => {
     switch (role) {
       case 1:
-        return <GraduationCap className="w-6 h-6" />;
+        return <GraduationCap className="w-5 h-5 text-blue-600" />;
       case 2:
-        return <User className="w-6 h-6" />;
+        return <User className="w-5 h-5 text-green-600" />;
       case 3:
-        return <Users className="w-6 h-6" />;
+        return <Users className="w-5 h-5 text-purple-600" />;
       default:
-        return <User className="w-6 h-6" />;
+        return <User className="w-5 h-5 text-gray-600" />;
     }
   };
 
@@ -36,30 +36,47 @@ export default function UserHeader({ name, role }: UserHeaderProps) {
     }
   };
 
-  const handleIconClick = () => {
+  const getHomeRoute = () => {
     switch (role) {
       case 1:
-        navigate('/admin');
-        break;
+        return '/admin';
       case 2:
-        navigate('/student-main');
-        break;
+        return '/student-main';
       case 3:
-        navigate('/parent-main');
-        break;
+        return '/parent-main';
       default:
-        break;
+        return '/';
     }
   };
 
+  const handleHomeClick = () => {
+    navigate(getHomeRoute());
+  };
+
   return (
-    <button 
-      onClick={handleIconClick}
-      className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm hover:bg-gray-50 transition-colors"
-    >
-      {getRoleIcon()}
-      <span className="text-sm text-gray-500">{getRoleText()}</span>
-      <span className="font-medium">{name}</span>
-    </button>
+    <div className="flex items-center gap-2">
+      <button
+        onClick={handleHomeClick}
+        className="flex items-center gap-2 bg-white px-3 py-2 rounded-full shadow-sm hover:bg-gray-50 transition-all duration-200 border border-gray-200 group"
+        title="홈"
+      >
+        <Home className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+      </button>
+      
+      <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200">
+        <div className="flex items-center gap-2">
+          {getRoleIcon()}
+          <span className="text-sm font-medium" style={{ 
+            color: role === 1 ? '#2563eb' : 
+                   role === 2 ? '#16a34a' : 
+                   role === 3 ? '#9333ea' : '#4b5563'
+          }}>
+            {getRoleText()}
+          </span>
+        </div>
+        <div className="w-px h-4 bg-gray-200"></div>
+        <span className="text-sm text-gray-700">{name}</span>
+      </div>
+    </div>
   );
 }

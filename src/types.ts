@@ -5,6 +5,26 @@ export interface FamilyInfo {
   parentName: string;
 }
 
+export interface RiskHistory {
+  RiskId: string;
+  Status: '00' | '01';  // 00: unresolved, 01: resolved
+  Description: string;
+  Date: string;
+  ResolutionComment?: string;
+}
+
+export interface RiskInfo {
+  RiskHistory: RiskHistory[];
+  TotalRiskCount: number;
+  UnresolvedRiskCount: number;
+}
+
+export interface TypeDiagnosis {
+  primaryType: string;
+  secondaryType: string;
+  diagnosisDate: string;
+}
+
 export interface Student {
   id: string;
   name: string;
@@ -13,9 +33,11 @@ export interface Student {
   admissionDate: string;
   familyInfo?: FamilyInfo;
   personalityResult: {
-    primaryType?: '벗꽃' | '복숭아' | '자두';
-    secondaryType?: '디지털' | '아날로그';
+    primaryType?: string;
+    secondaryType?: string;
   };
+  typeDiagnosis?: TypeDiagnosis[];
+  riskInfo?: RiskInfo;
 }
 
 export interface User {
@@ -40,8 +62,8 @@ export interface PersonalityReport {
   studentId: string;
   testDate: string;
   result: {
-    primaryType: '벗꽃' | '복숭아' | '자두';
-    secondaryType: '디지털' | '아날로그';
+    primaryType: string;
+    secondaryType: string;
   };
 }
 

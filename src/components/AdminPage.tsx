@@ -5,31 +5,43 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  useReactTable,
   getFilteredRowModel,
+  useReactTable,
 } from '@tanstack/react-table';
-import { Student } from '../types';
 import { 
   Search, 
   ArrowUpDown, 
   Flower2, 
   Apple, 
-  Grape, 
+  Grape,
   Laptop, 
-  Clock 
+  Clock,
+  AlertTriangle,
+  AlertCircle,
+  Cherry,
+  CheckCircle2
 } from 'lucide-react';
+import { Student } from '../types';
 import UserHeader from './UserHeader';
 
 const getPersonalityIcon = (type: string) => {
   switch (type) {
-    case '벗꽃':
-      return <Flower2 className="w-4 h-4 text-pink-400" aria-label="벗꽃" />;
-    case '복숭아':
-      return <Apple className="w-4 h-4 text-orange-400" aria-label="복숭아" />;
-    case '자두':
-      return <Grape className="w-4 h-4 text-purple-400" aria-label="자두" />;
+    case 'さくら':
+    case '사쿠라':
+      return <Flower2 className="w-4 h-4 text-pink-400" aria-label="사쿠라" />;
+    case 'うめ':
+    case '우메':
+      return <Cherry className="w-4 h-4 text-red-400" aria-label="우메" />;
+    case 'もも':
+    case '모모':
+      return <Apple className="w-4 h-4 text-orange-400" aria-label="모모" />;
+    case 'すもも':
+    case '스모모':
+      return <Grape className="w-4 h-4 text-purple-400" aria-label="스모모" />;
+    case 'デジタル':
     case '디지털':
       return <Laptop className="w-4 h-4 text-blue-400" aria-label="디지털" />;
+    case 'アナログ':
     case '아날로그':
       return <Clock className="w-4 h-4 text-gray-400" aria-label="아날로그" />;
     default:
@@ -37,25 +49,73 @@ const getPersonalityIcon = (type: string) => {
   }
 };
 
-const PersonalityDisplay = ({ primaryType, secondaryType }: { primaryType?: string; secondaryType?: string }) => {
-  if (!primaryType && !secondaryType) return null;
+const PersonalityDisplay = ({ student }: { student: Student }) => {
+  const navigate = useNavigate();
+  
+  if (!student.personalityResult?.primaryType && !student.personalityResult?.secondaryType) 
+    return <span className="text-gray-500">미실시</span>;
   
   return (
-    <div className="flex items-center gap-2">
+    <button 
+      onClick={() => navigate(`/student/${student.id}/reports`, { state: { student } })}
+      className="flex items-center gap-2 hover:bg-blue-50 px-3 py-1 rounded-full transition-colors"
+    >
       <div className="flex items-center gap-1">
-        {primaryType && getPersonalityIcon(primaryType)}
-        <span className="text-sm">{primaryType}</span>
+        {student.personalityResult.primaryType && getPersonalityIcon(student.personalityResult.primaryType)}
+        <span className="text-sm">{student.personalityResult.primaryType}</span>
       </div>
-      {secondaryType && (
+      {student.personalityResult.secondaryType && (
         <>
           <span className="text-gray-300">/</span>
           <div className="flex items-center gap-1">
-            {getPersonalityIcon(secondaryType)}
-            <span className="text-sm">{secondaryType}</span>
+            {getPersonalityIcon(student.personalityResult.secondaryType)}
+            <span className="text-sm">{student.personalityResult.secondaryType}</span>
           </div>
         </>
       )}
-    </div>
+    </button>
+  );
+};
+
+const RiskFactorDisplay = ({ student }: { student: Student }) => {
+  const navigate = useNavigate();
+  const { UnresolvedRiskCount = 0, TotalRiskCount = 0, RiskHistory = [] } = student.riskInfo || {};
+
+  const getLatestRisk = () => {
+    if (!RiskHistory.length) return null;
+    return RiskHistory.sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime())[0];
+  };
+
+  const latestRisk = getLatestRisk();
+
+  return (
+    <button
+      onClick={() => navigate(`/student/${student.id}/risk-factors`, { state: { student } })}
+      className="flex items-center gap-2 hover:bg-gray-50 px-3 py-1 rounded-full transition-colors group"
+    >
+      <div className="flex items-center gap-2">
+        <AlertTriangle className={`w-4 h-4 ${UnresolvedRiskCount > 0 ? 'text-red-500' : 'text-gray-400'}`} />
+        <span>
+          <span className={`font-medium ${UnresolvedRiskCount > 0 ? 'text-red-500' : 'text-gray-600'}`}>
+            {UnresolvedRiskCount}
+          </span>
+          <span className="text-gray-400">/</span>
+          <span className="text-gray-600">{TotalRiskCount}</span>
+        </span>
+      </div>
+      {latestRisk && (
+        <div className="hidden group-hover:block ml-2 text-sm text-gray-500">
+          <div className="flex items-center gap-1">
+            {latestRisk.Status === '01' ? (
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+            ) : (
+              <AlertCircle className="w-3 h-3 text-red-500" />
+            )}
+            <span className="truncate max-w-[200px]">{latestRisk.Description}</span>
+          </div>
+        </div>
+      )}
+    </button>
   );
 };
 
@@ -63,6 +123,7 @@ export default function AdminPage() {
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [globalFilter, setGlobalFilter] = useState('');
+  const [showUnresolvedOnly, setShowUnresolvedOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -87,6 +148,15 @@ export default function AdminPage() {
     fetchStudents();
   }, [user.academyId]);
 
+  const filteredData = React.useMemo(() => {
+    return students.filter(student => {
+      if (showUnresolvedOnly) {
+        return (student.riskInfo?.UnresolvedRiskCount || 0) > 0;
+      }
+      return true;
+    });
+  }, [students, showUnresolvedOnly]);
+
   const columns = [
     columnHelper.accessor((row, index) => index, {
       id: 'index',
@@ -95,17 +165,14 @@ export default function AdminPage() {
     }),
     columnHelper.accessor('id', {
       header: 'ID',
-      cell: info => {
-        const student = students[info.row.index];
-        return (
-          <button 
-            className="text-blue-600 hover:underline font-medium"
-            onClick={() => navigate(`/student/${info.getValue()}/reports`, { state: { student } })}
-          >
-            {info.getValue()}
-          </button>
-        );
-      },
+      cell: info => (
+        <button
+          onClick={() => navigate(`/student/${info.getValue()}/reports`, { state: { student: info.row.original } })}
+          className="text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          {info.getValue()}
+        </button>
+      ),
     }),
     columnHelper.accessor('name', {
       header: '성명',
@@ -126,22 +193,19 @@ export default function AdminPage() {
     columnHelper.accessor('personalityResult', {
       header: '성격 유형',
       cell: info => {
-        const result = info.getValue();
-        if (!result || Object.keys(result).length === 0) {
-          return <span className="text-gray-500">미실시</span>;
-        }
-        return (
-          <PersonalityDisplay 
-            primaryType={result.primaryType} 
-            secondaryType={result.secondaryType} 
-          />
-        );
+        const student = info.row.original;
+        return <PersonalityDisplay student={student} />;
       },
+    }),
+    columnHelper.accessor(row => row, {
+      id: 'riskFactors',
+      header: '위험요소',
+      cell: info => <RiskFactorDisplay student={info.getValue()} />,
     }),
   ];
 
   const table = useReactTable({
-    data: students,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -181,16 +245,31 @@ export default function AdminPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="mb-6">
-            <div className="relative">
-              <input
-                type="text"
-                value={globalFilter}
-                onChange={e => setGlobalFilter(e.target.value)}
-                placeholder="학생 이름 또는 아이디로 검색..."
-                className="w-full md:w-96 pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          <div className="mb-6 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={globalFilter}
+                  onChange={e => setGlobalFilter(e.target.value)}
+                  placeholder="학생 이름 또는 아이디로 검색..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              </div>
+              
+              <label className="flex items-center gap-2 bg-white px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={showUnresolvedOnly}
+                  onChange={e => setShowUnresolvedOnly(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500" />
+                  <span className="text-sm text-gray-700">미해결 위험요소만 보기</span>
+                </div>
+              </label>
             </div>
           </div>
 

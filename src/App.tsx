@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { LocaleProvider } from './contexts/LocaleContext';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import AdminPage from './components/AdminPage';
@@ -8,10 +9,14 @@ import ParentMainPage from './components/ParentMainPage';
 import StudentReportList from './components/StudentReportList';
 import PersonalityReportDetail from './components/PersonalityReportDetail';
 import PersonalityTest from './components/PersonalityTest';
+import RiskFactorManagement from './components/RiskFactorManagement';
+import { useLocale } from './contexts/LocaleContext';
 
-function App() {
+function AppContent() {
+  const { locale } = useLocale();
+
   return (
-    <BrowserRouter>
+    <div lang={locale} className="font-sans">
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
@@ -19,11 +24,22 @@ function App() {
         <Route path="/student-main" element={<StudentMainPage />} />
         <Route path="/parent-main" element={<ParentMainPage />} />
         <Route path="/student/:studentId/reports" element={<StudentReportList />} />
+        <Route path="/student/:studentId/risk-factors" element={<RiskFactorManagement />} />
         <Route path="/personality-report" element={<PersonalityReportDetail />} />
         <Route path="/personality-test" element={<PersonalityTest />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <LocaleProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </LocaleProvider>
   );
 }
 

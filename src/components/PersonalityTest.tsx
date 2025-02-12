@@ -4,7 +4,8 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  XCircle
+  XCircle,
+  AlertCircle
 } from 'lucide-react';
 import { questions, Question } from '../data/personalityQuestions';
 import UserHeader from './UserHeader';
@@ -18,7 +19,7 @@ interface Answer {
 }
 
 interface PersonalityResult {
-  primaryType: '벗꽃' | '복숭아' | '자두' | '자두';
+  primaryType: '벗꽃' | '복숭아' | '자두' | '매실';
   secondaryType: '디지털' | '아날로그';
 }
 
@@ -27,6 +28,8 @@ export default function PersonalityTest() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const [currentSection, setCurrentSection] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
+  const [error, setError] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentQuestions = questions.filter(q => q.section === SECTIONS[currentSection]);
   const sectionAnswers = answers.filter(a => 
@@ -63,52 +66,92 @@ export default function PersonalityTest() {
 
     // さくら (벗꽃)
     if (aScore < 5 && bScore >= 5 && cScore >= 5 && dScore >= 5 && eScore < 5) {
-      primaryType = '벗꽃';
+      primaryType = '사쿠라';
     }
-    // うめ (복숭아)
+    // うめ (매실)
     else if (aScore >= 5 && bScore < 5 && cScore >= 5 && dScore >= 5 && eScore < 5) {
-      primaryType = '복숭아';
+      primaryType = '우메';
     }
-    // もも (자두)
+    // もも (복숭아)
     else if (aScore < 5 && bScore < 5 && cScore >= 5 && dScore < 5 && eScore >= 5) {
-      primaryType = '자두';
+      primaryType = '모모';
     }
     // すもも (자두)
     else if (aScore >= 5 && bScore < 5 && cScore >= 5 && dScore < 5 && eScore >= 5) {
-      primaryType = '자두';
+      primaryType = '스모모';
     }
     else {
       // 기본값으로 가장 근접한 유형 선택
-      primaryType = '벗꽃';
+      primaryType = '사쿠라';
     }
 
     // デジタル/アナログ 판정
     const secondaryType: PersonalityResult['secondaryType'] = 
-      cScore > 10 ? '디지털' : '아날로그';
+      cScore > 5 ? '디지털' : '아날로그';
 
     return { primaryType, secondaryType };
   };
 
-  const handleNext = () => {
+  const submitResults = async (result: PersonalityResult) => {
+    try {
+      if (!user.id) {
+        throw new Error('사용자 정보가 올바르지 않습니다. 다시 로그인해주세요.');
+      }
+
+      const response = await fetch(`/api/students/${user.id}/personalityResult`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*'
+        },
+        body: JSON.stringify({
+          academyId: user.academyId,
+          diagnosisDate: new Date().toISOString().split('T')[0],
+          primaryType: result.primaryType,
+          secondaryType: result.secondaryType
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.message || 
+          `진단 결과 저장에 실패했습니다. (Status: ${response.status})`
+        );
+      }
+
+      // 성공 메시지 표시
+      alert('성격 진단이 완료되었습니다.');
+      
+      // 학생 메인 화면으로 이동
+      navigate('/student-main');
+
+    } catch (err) {
+      console.error('Error submitting results:', err);
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      
+      // 심각한 오류인 경우에만 메인 페이지로 이동
+      if (err instanceof Error && 
+          (err.message.includes('사용자 정보가 올바르지 않습니다') || 
+           err.message.includes('Failed to fetch'))) {
+        navigate('/student-main');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNext = async () => {
     if (currentSection < SECTIONS.length - 1) {
       setCurrentSection(prev => prev + 1);
       window.scrollTo(0, 0);
     } else {
+      if (isSubmitting) return;
+      
+      setIsSubmitting(true);
+      setError(''); // 이전 에러 메시지 초기화
       const result = determinePersonalityType();
-      const testDate = new Date().toISOString().split('T')[0];
-
-      // 결과 페이지로 이동
-      navigate('/personality-report', { 
-        state: { 
-          report: {
-            id: Date.now().toString(),
-            studentId: user.id,
-            testDate,
-            result
-          },
-          student: user
-        }
-      });
+      await submitResults(result);
     }
   };
 
@@ -150,6 +193,17 @@ export default function PersonalityTest() {
           </div>
         </div>
       </div>
+
+      {error && (
+        <div className="fixed top-[73px] left-0 right-0 z-20 bg-red-50 border-b border-red-200">
+          <div className="max-w-7xl mx-auto px-4 py-3">
+            <div className="flex items-center gap-2 text-red-700">
+              <AlertCircle className="w-5 h-5" />
+              <p>{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-2xl mx-auto px-4">
         {/* Fixed Progress Section */}
@@ -242,15 +296,15 @@ export default function PersonalityTest() {
 
             <button
               onClick={handleNext}
-              disabled={!canProceed()}
+              disabled={!canProceed() || isSubmitting}
               className={`px-6 py-2 rounded-lg flex items-center gap-2 ${
-                canProceed()
+                canProceed() && !isSubmitting
                   ? 'bg-blue-500 text-white hover:bg-blue-600'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
-              {currentSection === SECTIONS.length - 1 ? '완료' : '다음'}
-              {currentSection < SECTIONS.length - 1 && <ArrowRight className="w-5 h-5" />}
+              {isSubmitting ? '처리중...' : currentSection === SECTIONS.length - 1 ? '완료' : '다음'}
+              {!isSubmitting && currentSection < SECTIONS.length - 1 && <ArrowRight className="w-5 h-5" />}
             </button>
           </div>
         </div>

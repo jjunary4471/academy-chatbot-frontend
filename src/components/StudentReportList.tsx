@@ -1,26 +1,35 @@
 import React from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Flower2, 
   Apple, 
   Grape, 
   Laptop, 
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  Cherry
 } from 'lucide-react';
-import type { PersonalityReport, Student } from '../types';
+import type { Student } from '../types';
 import UserHeader from './UserHeader';
 
 const getPersonalityIcon = (type: string) => {
   switch (type) {
-    case '벗꽃':
-      return <Flower2 className="w-4 h-4 text-pink-400" aria-label="벗꽃" />;
-    case '복숭아':
-      return <Apple className="w-4 h-4 text-orange-400" aria-label="복숭아" />;
-    case '자두':
-      return <Grape className="w-4 h-4 text-purple-400" aria-label="자두" />;
+    case 'さくら':
+    case '사쿠라':
+      return <Flower2 className="w-4 h-4 text-pink-400" aria-label="사쿠라" />;
+    case 'うめ':
+    case '우메':
+      return <Cherry className="w-4 h-4 text-red-400" aria-label="우메" />;
+    case 'もも':
+    case '모모':
+      return <Apple className="w-4 h-4 text-orange-400" aria-label="모모" />;
+    case 'すもも':
+    case '스모모':
+      return <Grape className="w-4 h-4 text-purple-400" aria-label="스모모" />;
+    case 'デジタル':
     case '디지털':
       return <Laptop className="w-4 h-4 text-blue-400" aria-label="디지털" />;
+    case 'アナログ':
     case '아날로그':
       return <Clock className="w-4 h-4 text-gray-400" aria-label="아날로그" />;
     default:
@@ -28,19 +37,27 @@ const getPersonalityIcon = (type: string) => {
   }
 };
 
-const PersonalityDisplay = ({ primaryType, secondaryType }: { primaryType: string; secondaryType: string }) => {
+const PersonalityDisplay = ({ 
+  student, 
+  primaryType, 
+  secondaryType, 
+  diagnosisDate 
+}: { 
+  student: Student; 
+  primaryType: string; 
+  secondaryType: string;
+  diagnosisDate: string;
+}) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const student = location.state?.student;
-
+  
   return (
     <button 
       className="flex items-center gap-2 hover:bg-blue-50 p-2 rounded-md transition-colors"
       onClick={() => {
         const mockReport = {
-          id: '1',
+          id: `${student.id}-${diagnosisDate}`,
           studentId: student.id,
-          testDate: '2024-03-15',
+          testDate: diagnosisDate,
           result: {
             primaryType,
             secondaryType
@@ -67,37 +84,6 @@ const PersonalityDisplay = ({ primaryType, secondaryType }: { primaryType: strin
   );
 };
 
-// 샘플 데이터
-const mockReports: PersonalityReport[] = [
-  {
-    id: '1',
-    studentId: '1',
-    testDate: '2024-03-15',
-    result: {
-      primaryType: '벗꽃',
-      secondaryType: '디지털'
-    }
-  },
-  {
-    id: '2',
-    studentId: '1',
-    testDate: '2024-02-15',
-    result: {
-      primaryType: '복숭아',
-      secondaryType: '아날로그'
-    }
-  },
-  {
-    id: '3',
-    studentId: '1',
-    testDate: '2024-01-15',
-    result: {
-      primaryType: '자두',
-      secondaryType: '디지털'
-    }
-  }
-];
-
 export default function StudentReportList() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -111,6 +97,11 @@ export default function StudentReportList() {
       </div>
     );
   }
+
+  // Sort diagnosis history by date in descending order
+  const sortedDiagnosis = [...(student.typeDiagnosis || [])].sort((a, b) => 
+    new Date(b.diagnosisDate).getTime() - new Date(a.diagnosisDate).getTime()
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
@@ -143,8 +134,10 @@ export default function StudentReportList() {
                   <div className="flex items-center gap-2">
                     <span className="text-gray-600">현재 성격 유형:</span>
                     <PersonalityDisplay 
-                      primaryType={student.personalityResult.primaryType || '벗꽃'} 
-                      secondaryType={student.personalityResult.secondaryType || '디지털'} 
+                      student={student}
+                      primaryType={student.personalityResult.primaryType} 
+                      secondaryType={student.personalityResult.secondaryType}
+                      diagnosisDate={sortedDiagnosis[0]?.diagnosisDate || new Date().toISOString().split('T')[0]}
                     />
                   </div>
                 )}
@@ -153,7 +146,7 @@ export default function StudentReportList() {
             
             <div className="bg-blue-50 p-4 rounded-lg">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">학부모 정보</h2>
-              {student.familyInfo ? (
+              {student.familyInfo?.parentName ? (
                 <p className="text-gray-600">{student.familyInfo.parentName}</p>
               ) : (
                 <p className="text-gray-500 italic">등록된 학부모 정보가 없습니다</p>
@@ -179,18 +172,20 @@ export default function StudentReportList() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {mockReports.map((report, index) => (
-                    <tr key={report.id} className="hover:bg-blue-50 transition-colors duration-200">
+                  {sortedDiagnosis.map((diagnosis, index) => (
+                    <tr key={`${diagnosis.diagnosisDate}-${index}`} className="hover:bg-blue-50 transition-colors duration-200">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {report.testDate}
+                        {diagnosis.diagnosisDate}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <PersonalityDisplay 
-                          primaryType={report.result.primaryType} 
-                          secondaryType={report.result.secondaryType} 
+                          student={student}
+                          primaryType={diagnosis.primaryType}
+                          secondaryType={diagnosis.secondaryType}
+                          diagnosisDate={diagnosis.diagnosisDate}
                         />
                       </td>
                     </tr>
