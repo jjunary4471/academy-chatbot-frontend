@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { School } from 'lucide-react';
+import { useLocale } from '../contexts/LocaleContext';
+import { useAuth } from '../contexts/AuthContext';
+import LocaleToggle from './LocaleToggle';
+import type { User } from '../types';
 
 export default function LoginPage() {
   const [userId, setUserId] = useState('');
@@ -9,6 +13,26 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [message, setMessage] = useState<string>('');
+  const { t } = useLocale();
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    // 이미 인증된 사용자는 역할에 맞는 페이지로 리다이렉트
+    if (isAuthenticated) {
+      const user = JSON.parse(localStorage.getItem('user') || '{}') as User;
+      switch (user.role) {
+        case 1:
+          navigate('/admin');
+          break;
+        case 2:
+          navigate('/student-main');
+          break;
+        case 3:
+          navigate('/parent-main');
+          break;
+      }
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     if (location.state?.message) {
@@ -27,12 +51,12 @@ export default function LoginPage() {
       
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error('사용자를 찾을 수 없습니다.');
+          throw new Error(t('auth.login.userNotFound'));
         }
-        throw new Error('로그인 중 오류가 발생했습니다.');
+        throw new Error(t('auth.login.failed'));
       }
 
-      const userData = await response.json();
+      const userData: User = await response.json();
       localStorage.setItem('user', JSON.stringify(userData));
 
       // Redirect based on role
@@ -52,9 +76,9 @@ export default function LoginPage() {
     } catch (err) {
       console.error('Login error:', err);
       if (err instanceof TypeError && err.message === 'Failed to fetch') {
-        setError('서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.');
+        setError(t('auth.login.networkError'));
       } else {
-        setError(err instanceof Error ? err.message : '로그인 중 오류가 발생했습니다.');
+        setError(err instanceof Error ? err.message : t('auth.login.failed'));
       }
     } finally {
       setIsLoading(false);
@@ -63,10 +87,15 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">
+      {/* Language Toggle */}
+      <div className="fixed top-4 right-4">
+        <LocaleToggle />
+      </div>
+
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <School className="w-16 h-16 text-blue-600 mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800">교육 관리 시스템</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t('auth.login.title')}</h1>
         </div>
         
         {message && (
@@ -84,13 +113,14 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-1">
-              아이디
+              {t('common.id')}
             </label>
             <input
               id="userId"
               type="text"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
+              placeholder={t('auth.login.enterUserId')}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
@@ -103,7 +133,7 @@ export default function LoginPage() {
               isLoading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
-            {isLoading ? '로그인 중...' : '로그인'}
+            {isLoading ? t('auth.login.processing') : t('common.login')}
           </button>
 
           <div className="text-center">
@@ -112,7 +142,7 @@ export default function LoginPage() {
               onClick={() => navigate('/signup')}
               className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
             >
-              회원가입
+              {t('common.signup')}
             </button>
           </div>
         </form>

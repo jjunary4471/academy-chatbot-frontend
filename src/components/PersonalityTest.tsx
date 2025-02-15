@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { questions, Question } from '../data/personalityQuestions';
 import UserHeader from './UserHeader';
+import { useLocale } from '../contexts/LocaleContext';
 
 const QUESTIONS_PER_SECTION = 10;
 const SECTIONS = ['A', 'B', 'C', 'D', 'E', 'S'];
@@ -30,6 +31,7 @@ export default function PersonalityTest() {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useLocale();
 
   const currentQuestions = questions.filter(q => q.section === SECTIONS[currentSection]);
   const sectionAnswers = answers.filter(a => 
@@ -81,11 +83,9 @@ export default function PersonalityTest() {
       primaryType = '스모모';
     }
     else {
-      // 기본값으로 가장 근접한 유형 선택
       primaryType = '사쿠라';
     }
 
-    // デジタル/アナログ 판정
     const secondaryType: PersonalityResult['secondaryType'] = 
       cScore > 5 ? '디지털' : '아날로그';
 
@@ -95,7 +95,7 @@ export default function PersonalityTest() {
   const submitResults = async (result: PersonalityResult) => {
     try {
       if (!user.id) {
-        throw new Error('사용자 정보가 올바르지 않습니다. 다시 로그인해주세요.');
+        throw new Error(t('auth.login.userNotFound'));
       }
 
       const response = await fetch(`/api/students/${user.id}/personalityResult`, {
@@ -116,23 +116,19 @@ export default function PersonalityTest() {
         const errorData = await response.json().catch(() => null);
         throw new Error(
           errorData?.message || 
-          `진단 결과 저장에 실패했습니다. (Status: ${response.status})`
+          t('personality.test.error')
         );
       }
 
-      // 성공 메시지 표시
-      alert('성격 진단이 완료되었습니다.');
-      
-      // 학생 메인 화면으로 이동
+      alert(t('personality.test.complete'));
       navigate('/student-main');
 
     } catch (err) {
       console.error('Error submitting results:', err);
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      setError(err instanceof Error ? err.message : t('personality.test.error'));
       
-      // 심각한 오류인 경우에만 메인 페이지로 이동
       if (err instanceof Error && 
-          (err.message.includes('사용자 정보가 올바르지 않습니다') || 
+          (err.message.includes(t('auth.login.userNotFound')) || 
            err.message.includes('Failed to fetch'))) {
         navigate('/student-main');
       }
@@ -149,7 +145,7 @@ export default function PersonalityTest() {
       if (isSubmitting) return;
       
       setIsSubmitting(true);
-      setError(''); // 이전 에러 메시지 초기화
+      setError('');
       const result = determinePersonalityType();
       await submitResults(result);
     }
@@ -163,15 +159,7 @@ export default function PersonalityTest() {
   };
 
   const getSectionTitle = (section: string) => {
-    switch (section) {
-      case 'A': return '규범성';
-      case 'B': return '협조성';
-      case 'C': return '논리성';
-      case 'D': return '활동성';
-      case 'E': return '안정성';
-      case 'S': return '스트레스';
-      default: return '';
-    }
+    return t(`personality.test.section.${section}`);
   };
 
   return (
@@ -187,7 +175,7 @@ export default function PersonalityTest() {
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-gray-800">성격 진단 테스트</h1>
+              <h1 className="text-2xl font-bold text-gray-800">{t('personality.test.title')}</h1>
             </div>
             <UserHeader name={user.name} role={user.role} />
           </div>
@@ -214,7 +202,10 @@ export default function PersonalityTest() {
                 {getSectionTitle(SECTIONS[currentSection])} ({currentSection + 1}/6)
               </h2>
               <span className="text-sm text-gray-600">
-                {sectionAnswers.length}/{QUESTIONS_PER_SECTION} 답변 완료
+                {t('personality.test.progress', { 
+                  current: String(sectionAnswers.length), 
+                  total: String(QUESTIONS_PER_SECTION) 
+                })}
               </span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full">
@@ -254,7 +245,7 @@ export default function PersonalityTest() {
                       >
                         <div className="flex items-center justify-center gap-2">
                           <CheckCircle2 className="w-5 h-5" />
-                          <span className="text-xs">はい</span>
+                          <span className="text-xs">{t('personality.test.answer.yes')}</span>
                         </div>
                       </button>
                       <button
@@ -267,7 +258,7 @@ export default function PersonalityTest() {
                       >
                         <div className="flex items-center justify-center gap-2">
                           <XCircle className="w-5 h-5" />
-                          <span className="text-xs">いいえ</span>
+                          <span className="text-xs">{t('personality.test.answer.no')}</span>
                         </div>
                       </button>
                     </div>
@@ -291,7 +282,7 @@ export default function PersonalityTest() {
               }`}
             >
               <ArrowLeft className="w-5 h-5" />
-              이전
+              {t('common.back')}
             </button>
 
             <button
@@ -303,7 +294,7 @@ export default function PersonalityTest() {
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
-              {isSubmitting ? '처리중...' : currentSection === SECTIONS.length - 1 ? '완료' : '다음'}
+              {isSubmitting ? t('common.processing') : currentSection === SECTIONS.length - 1 ? t('common.complete') : t('common.next')}
               {!isSubmitting && currentSection < SECTIONS.length - 1 && <ArrowRight className="w-5 h-5" />}
             </button>
           </div>

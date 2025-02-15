@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LocaleProvider } from './contexts/LocaleContext';
+import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import AdminPage from './components/AdminPage';
@@ -35,11 +36,13 @@ function AppContent() {
 
 function App() {
   return (
-    <LocaleProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </LocaleProvider>
+    <BrowserRouter>
+      <LocaleProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </LocaleProvider>
+    </BrowserRouter>
   );
 }
 

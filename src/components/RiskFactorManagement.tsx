@@ -15,6 +15,7 @@ import {
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import UserHeader from './UserHeader';
+import { useLocale } from '../contexts/LocaleContext';
 import type { Student, RiskHistory } from '../types';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -22,6 +23,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 export default function RiskFactorManagement() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLocale();
   const student = location.state?.student as Student;
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,7 @@ export default function RiskFactorManagement() {
   if (!student) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-red-600">학생 정보를 찾을 수 없습니다.</div>
+        <div className="text-red-600">{t('risk.studentNotFound')}</div>
       </div>
     );
   }
@@ -51,7 +53,7 @@ export default function RiskFactorManagement() {
   const unresolvedCount = student.riskInfo?.UnresolvedRiskCount || 0;
 
   const chartData = {
-    labels: ['해결완료', '미해결'],
+    labels: [t('common.resolved'), t('common.unresolved')],
     datasets: [
       {
         data: [resolvedCount, unresolvedCount],
@@ -88,7 +90,7 @@ export default function RiskFactorManagement() {
             const value = context.raw || 0;
             const total = resolvedCount + unresolvedCount;
             const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-            return `${label}: ${value}건 (${percentage}%)`;
+            return `${label}: ${value}${t('common.cases')} (${percentage}%)`;
           }
         }
       }
@@ -114,7 +116,7 @@ export default function RiskFactorManagement() {
       });
 
       if (!response.ok) {
-        throw new Error('위험요소 해결 처리에 실패했습니다.');
+        throw new Error(t('risk.updateFailed'));
       }
 
       // 성공 시 모달 닫고 상태 초기화
@@ -125,7 +127,7 @@ export default function RiskFactorManagement() {
       // 페이지 새로고침
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      setError(err instanceof Error ? err.message : t('risk.updateFailed'));
     } finally {
       setLoading(false);
     }
@@ -136,7 +138,7 @@ export default function RiskFactorManagement() {
       <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">해결 내용 입력</h3>
+            <h3 className="text-lg font-semibold text-gray-800">{t('risk.enterResolution')}</h3>
             <button
               onClick={() => {
                 setShowCommentModal(false);
@@ -151,13 +153,13 @@ export default function RiskFactorManagement() {
           
           <div className="mb-4">
             <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-2">
-              해결 내용 <span className="text-red-500">*</span>
+              {t('risk.resolutionContent')} <span className="text-red-500">*</span>
             </label>
             <textarea
               id="comment"
               value={resolutionComment}
               onChange={(e) => setResolutionComment(e.target.value)}
-              placeholder="해결 방안이나 조치 내용을 입력해주세요..."
+              placeholder={t('risk.resolutionPlaceholder')}
               className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
               required
             />
@@ -172,7 +174,7 @@ export default function RiskFactorManagement() {
               }}
               className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
             >
-              취소
+              {t('common.cancel')}
             </button>
             <button
               onClick={handleResolutionUpdate}
@@ -183,7 +185,7 @@ export default function RiskFactorManagement() {
                   : 'bg-gray-300 cursor-not-allowed'
               }`}
             >
-              {loading ? '처리중...' : '해결 처리'}
+              {loading ? t('common.processing') : t('risk.markAsResolved')}
             </button>
           </div>
         </div>
@@ -203,7 +205,7 @@ export default function RiskFactorManagement() {
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-gray-800">위험요소 관리</h1>
+              <h1 className="text-2xl font-bold text-gray-800">{t('risk.management')}</h1>
             </div>
             <UserHeader name={user.name} role={user.role} />
           </div>
@@ -218,16 +220,16 @@ export default function RiskFactorManagement() {
               <div className="bg-blue-100 rounded-full p-2">
                 <User className="w-6 h-6 text-blue-600" />
               </div>
-              <h2 className="text-lg font-semibold text-gray-800">학생 정보</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{t('risk.studentInfo')}</h2>
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">이름: {student.name}</span>
+                <span className="text-gray-600">{t('common.name')}: {student.name}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">입학일: {student.admissionDate || '-'}</span>
+                <span className="text-gray-600">{t('risk.admissionDate')}: {student.admissionDate || '-'}</span>
               </div>
             </div>
           </div>
@@ -237,17 +239,17 @@ export default function RiskFactorManagement() {
               <div className="bg-purple-100 rounded-full p-2">
                 <Users className="w-6 h-6 text-purple-600" />
               </div>
-              <h2 className="text-lg font-semibold text-gray-800">학부모 정보</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{t('risk.parentInfo')}</h2>
             </div>
             {student.familyInfo?.parentName ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-600">이름: {student.familyInfo.parentName}</span>
+                  <span className="text-gray-600">{t('common.name')}: {student.familyInfo.parentName}</span>
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500 italic">등록된 학부모 정보가 없습니다</p>
+              <p className="text-gray-500 italic">{t('risk.noParentInfo')}</p>
             )}
           </div>
         </div>
@@ -258,7 +260,7 @@ export default function RiskFactorManagement() {
             <div className="bg-red-100 rounded-full p-2">
               <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-800">위험요소 현황</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{t('risk.status')}</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -272,7 +274,7 @@ export default function RiskFactorManagement() {
                 <div className="text-2xl font-bold text-gray-800">
                   {student.riskInfo?.TotalRiskCount || 0}
                 </div>
-                <div className="text-sm text-gray-500">총 건수</div>
+                <div className="text-sm text-gray-500">{t('common.total')} {t('common.cases')}</div>
               </div>
             </div>
 
@@ -280,7 +282,7 @@ export default function RiskFactorManagement() {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-red-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">총 위험요소</span>
+                  <span className="text-gray-600">{t('risk.totalRisks')}</span>
                   <span className="text-xl font-semibold text-gray-800">
                     {student.riskInfo?.TotalRiskCount || 0}
                   </span>
@@ -288,7 +290,7 @@ export default function RiskFactorManagement() {
               </div>
               <div className="bg-orange-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">미해결</span>
+                  <span className="text-gray-600">{t('risk.unresolvedRisks')}</span>
                   <span className="text-xl font-semibold text-red-600">
                     {student.riskInfo?.UnresolvedRiskCount || 0}
                   </span>
@@ -296,7 +298,7 @@ export default function RiskFactorManagement() {
               </div>
               <div className="bg-green-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">해결완료</span>
+                  <span className="text-gray-600">{t('risk.resolvedRisks')}</span>
                   <span className="text-xl font-semibold text-green-600">
                     {resolvedCount}
                   </span>
@@ -304,7 +306,7 @@ export default function RiskFactorManagement() {
               </div>
               <div className="bg-blue-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">해결률</span>
+                  <span className="text-gray-600">{t('risk.resolutionRate')}</span>
                   <span className="text-xl font-semibold text-blue-600">
                     {student.riskInfo?.TotalRiskCount
                       ? Math.round(
@@ -326,10 +328,10 @@ export default function RiskFactorManagement() {
               <div className="bg-orange-100 rounded-full p-2">
                 <AlertCircle className="w-6 h-6 text-orange-600" />
               </div>
-              <h2 className="text-lg font-semibold text-gray-800">위험요소 목록</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{t('risk.list')}</h2>
             </div>
             <div className="text-sm text-gray-500">
-              총 {sortedRiskHistory.length}건
+              {t('common.total')} {sortedRiskHistory.length}{t('common.cases')}
             </div>
           </div>
 
@@ -358,7 +360,7 @@ export default function RiskFactorManagement() {
                       <span className={`font-medium ${
                         risk.Status === '00' ? 'text-red-600' : 'text-green-600'
                       }`}>
-                        {risk.Status === '00' ? '미해결' : '해결됨'}
+                        {risk.Status === '00' ? t('common.unresolved') : t('common.resolved')}
                       </span>
                       <span className="text-gray-400">|</span>
                       <span className="text-gray-600">{risk.Date}</span>
@@ -382,7 +384,7 @@ export default function RiskFactorManagement() {
                         disabled={loading}
                         className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        해결 처리
+                        {t('risk.markAsResolved')}
                       </button>
                     </div>
                   )}
@@ -392,7 +394,7 @@ export default function RiskFactorManagement() {
 
             {sortedRiskHistory.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                등록된 위험요소가 없습니다.
+                {t('risk.noRisks')}
               </div>
             )}
           </div>

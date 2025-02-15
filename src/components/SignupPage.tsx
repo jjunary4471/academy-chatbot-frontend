@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
+import { useLocale } from '../contexts/LocaleContext';
+import LocaleToggle from './LocaleToggle';
 import type { SignupForm } from '../types';
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const { t } = useLocale();
   const [formData, setFormData] = useState<SignupForm>({
     academyId: '',
     id: '',
@@ -61,13 +64,13 @@ export default function SignupPage() {
       }
 
       console.log('Signup successful');
-      navigate('/', { state: { message: '회원가입이 완료되었습니다. 로그인해주세요.' } });
+      navigate('/', { state: { message: t('auth.signup.success') } });
     } catch (err) {
       console.error('Signup error:', err);
       if (err instanceof TypeError && err.message === 'Failed to fetch') {
-        setError('서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.');
+        setError(t('auth.login.networkError'));
       } else {
-        setError(err instanceof Error ? err.message : '회원가입 중 오류가 발생했습니다.');
+        setError(err instanceof Error ? err.message : t('auth.login.failed'));
       }
     } finally {
       setIsLoading(false);
@@ -76,10 +79,15 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">
+      {/* Language Toggle */}
+      <div className="fixed top-4 right-4">
+        <LocaleToggle />
+      </div>
+
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <UserPlus className="w-16 h-16 text-blue-600 mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800">회원가입</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t('auth.signup.title')}</h1>
         </div>
 
         {error && (
@@ -91,7 +99,7 @@ export default function SignupPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="academyId" className="block text-sm font-medium text-gray-700 mb-1">
-              아카데미 ID
+              {t('auth.signup.academyId')}
             </label>
             <input
               id="academyId"
@@ -105,7 +113,7 @@ export default function SignupPage() {
 
           <div>
             <label htmlFor="id" className="block text-sm font-medium text-gray-700 mb-1">
-              사용자 ID
+              {t('auth.signup.userId')}
             </label>
             <input
               id="id"
@@ -119,7 +127,7 @@ export default function SignupPage() {
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              이름
+              {t('common.name')}
             </label>
             <input
               id="name"
@@ -133,7 +141,7 @@ export default function SignupPage() {
 
           <div>
             <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-              역할
+              {t('common.role')}
             </label>
             <select
               id="role"
@@ -142,16 +150,16 @@ export default function SignupPage() {
               onChange={(e) => setFormData(prev => ({ ...prev, role: Number(e.target.value) }))}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value={1}>교사 (TEACHER)</option>
-              <option value={2}>학생 (STUDENT)</option>
-              <option value={3}>학부모 (PARENT)</option>
+              <option value={1}>{t('auth.signup.role.teacher')}</option>
+              <option value={2}>{t('auth.signup.role.student')}</option>
+              <option value={3}>{t('auth.signup.role.parent')}</option>
             </select>
           </div>
 
           {formData.role === 2 && (
             <div>
               <label htmlFor="admissionDate" className="block text-sm font-medium text-gray-700 mb-1">
-                입학일
+                {t('auth.signup.admissionDate')}
               </label>
               <input
                 id="admissionDate"
@@ -167,7 +175,7 @@ export default function SignupPage() {
           {formData.role === 3 && (
             <div>
               <label htmlFor="childId" className="block text-sm font-medium text-gray-700 mb-1">
-                자녀 ID
+                {t('auth.signup.childId')}
               </label>
               <input
                 id="childId"
@@ -182,7 +190,7 @@ export default function SignupPage() {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              이메일
+              {t('common.email')}
             </label>
             <input
               id="email"
@@ -201,7 +209,7 @@ export default function SignupPage() {
               isLoading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
-            {isLoading ? '처리중...' : '회원가입'}
+            {isLoading ? t('auth.signup.processing') : t('common.signup')}
           </button>
 
           <button
@@ -209,7 +217,7 @@ export default function SignupPage() {
             onClick={() => navigate('/')}
             className="w-full mt-2 bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 transition-colors duration-200"
           >
-            로그인으로 돌아가기
+            {t('auth.signup.backToLogin')}
           </button>
         </form>
       </div>

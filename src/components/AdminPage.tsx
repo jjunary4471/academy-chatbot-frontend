@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Student } from '../types';
 import UserHeader from './UserHeader';
+import { useLocale } from '../contexts/LocaleContext';
 
 const getPersonalityIcon = (type: string) => {
   switch (type) {
@@ -79,6 +80,7 @@ const PersonalityDisplay = ({ student }: { student: Student }) => {
 
 const RiskFactorDisplay = ({ student }: { student: Student }) => {
   const navigate = useNavigate();
+  const { t } = useLocale();
   const { UnresolvedRiskCount = 0, TotalRiskCount = 0, RiskHistory = [] } = student.riskInfo || {};
 
   const getLatestRisk = () => {
@@ -128,25 +130,26 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const columnHelper = createColumnHelper<Student>();
+  const { t } = useLocale();
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         const response = await fetch(`/api/academies/${user.academyId}/students`);
         if (!response.ok) {
-          throw new Error('학생 목록을 불러오는데 실패했습니다.');
+          throw new Error(t('common.noData'));
         }
         const data = await response.json();
         setStudents(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '데이터를 불러오는데 실패했습니다.');
+        setError(err instanceof Error ? err.message : t('common.noData'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchStudents();
-  }, [user.academyId]);
+  }, [user.academyId, t]);
 
   const filteredData = React.useMemo(() => {
     return students.filter(student => {
@@ -175,7 +178,7 @@ export default function AdminPage() {
       ),
     }),
     columnHelper.accessor('name', {
-      header: '성명',
+      header: t('common.name'),
       cell: info => info.getValue(),
     }),
     columnHelper.accessor('admissionDate', {
@@ -184,14 +187,14 @@ export default function AdminPage() {
           className="flex items-center gap-1"
           onClick={() => column.toggleSorting()}
         >
-          입학일
+          {t('auth.signup.admissionDate')}
           <ArrowUpDown className="w-4 h-4" />
         </button>
       ),
       cell: info => info.getValue() || '-',
     }),
     columnHelper.accessor('personalityResult', {
-      header: '성격 유형',
+      header: t('personality.test.title'),
       cell: info => {
         const student = info.row.original;
         return <PersonalityDisplay student={student} />;
@@ -199,7 +202,7 @@ export default function AdminPage() {
     }),
     columnHelper.accessor(row => row, {
       id: 'riskFactors',
-      header: '위험요소',
+      header: t('risk.management'),
       cell: info => <RiskFactorDisplay student={info.getValue()} />,
     }),
   ];
@@ -219,7 +222,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-blue-600">로딩중...</div>
+        <div className="text-blue-600">{t('common.processing')}</div>
       </div>
     );
   }
@@ -237,7 +240,7 @@ export default function AdminPage() {
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800">학생 관리</h1>
+            <h1 className="text-2xl font-bold text-gray-800">{t('dashboard.admin.title')}</h1>
             <UserHeader name={user.name} role={user.role} />
           </div>
         </div>
@@ -252,7 +255,7 @@ export default function AdminPage() {
                   type="text"
                   value={globalFilter}
                   onChange={e => setGlobalFilter(e.target.value)}
-                  placeholder="학생 이름 또는 아이디로 검색..."
+                  placeholder={t('dashboard.search.placeholder')}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -267,7 +270,7 @@ export default function AdminPage() {
                 />
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-red-500" />
-                  <span className="text-sm text-gray-700">미해결 위험요소만 보기</span>
+                  <span className="text-sm text-gray-700">{t('dashboard.filter.unresolvedOnly')}</span>
                 </div>
               </label>
             </div>

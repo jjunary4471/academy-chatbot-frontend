@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import UserHeader from './UserHeader';
 import type { PersonalityReport, Student } from '../types';
+import { useLocale } from '../contexts/LocaleContext';
 
 const getPersonalityIcon = (type: string) => {
   switch (type) {
@@ -53,15 +54,16 @@ interface LocationState {
 export default function PersonalityReportDetail() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { report, student } = location.state as LocationState || {};
+  const { report, student } = (location.state || {}) as LocationState;
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isStudent = user.role === 2;
+  const { t } = useLocale();
 
   // 필요한 데이터가 없으면 에러 메시지 표시
-  if (!report || !student) {
+  if (!report?.result || !student) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-red-600">진단 결과를 찾을 수 없습니다.</div>
+        <div className="text-red-600">{t('common.noData')}</div>
       </div>
     );
   }
@@ -76,86 +78,86 @@ export default function PersonalityReportDetail() {
 
   // Personality type descriptions
   const typeDescriptions: { [key: string]: string } = {
-    'さくら': "새로운 것을 배우는 것을 좋아하며, 호기심이 많고 창의적입니다.",
-    '사쿠라': "새로운 것을 배우는 것을 좋아하며, 호기심이 많고 창의적입니다.",
-    'うめ': "정확하고 체계적이며, 원칙을 중시하는 성향입니다.",
-    '우메': "정확하고 체계적이며, 원칙을 중시하는 성향입니다.",
-    'もも': "차분하고 신중하며, 깊이 있는 사고를 하는 성향입니다.",
-    '모모': "차분하고 신중하며, 깊이 있는 사고를 하는 성향입니다.",
-    'すもも': "활발하고 적극적이며, 다른 사람들과 어울리기를 좋아합니다.",
-    '스모모': "활발하고 적극적이며, 다른 사람들과 어울리기를 좋아합니다.",
-    'デジタル': "논리적이고 체계적인 접근을 선호하며, 효율성을 중시합니다.",
-    '디지털': "논리적이고 체계적인 접근을 선호하며, 효율성을 중시합니다.",
-    'アナログ': "감성적이고 직관적인 접근을 선호하며, 창의성을 중시합니다.",
-    '아날로그': "감성적이고 직관적인 접근을 선호하며, 창의성을 중시합니다."
+    'さくら': t('personality.type.sakura.desc'),
+    '사쿠라': t('personality.type.sakura.desc'),
+    'うめ': t('personality.type.ume.desc'),
+    '우메': t('personality.type.ume.desc'),
+    'もも': t('personality.type.momo.desc'),
+    '모모': t('personality.type.momo.desc'),
+    'すもも': t('personality.type.sumomo.desc'),
+    '스모모': t('personality.type.sumomo.desc'),
+    'デジタル': t('personality.type.digital.desc'),
+    '디지털': t('personality.type.digital.desc'),
+    'アナログ': t('personality.type.analog.desc'),
+    '아날로그': t('personality.type.analog.desc')
   };
 
   // Learning recommendations
   const learningRecommendations: { [key: string]: string[] } = {
     'さくら': [
-      "다양한 주제의 프로젝트 학습",
-      "실험과 탐구 활동",
-      "창의적 문제 해결 과제"
+      t('personality.type.sakura.rec1'),
+      t('personality.type.sakura.rec2'),
+      t('personality.type.sakura.rec3')
     ],
     '사쿠라': [
-      "다양한 주제의 프로젝트 학습",
-      "실험과 탐구 활동",
-      "창의적 문제 해결 과제"
+      t('personality.type.sakura.rec1'),
+      t('personality.type.sakura.rec2'),
+      t('personality.type.sakura.rec3')
     ],
     'うめ': [
-      "체계적인 학습 계획 수립",
-      "정확한 분석과 검증 활동",
-      "원리 이해 중심의 학습"
+      t('personality.type.ume.rec1'),
+      t('personality.type.ume.rec2'),
+      t('personality.type.ume.rec3')
     ],
     '우메': [
-      "체계적인 학습 계획 수립",
-      "정확한 분석과 검증 활동",
-      "원리 이해 중심의 학습"
+      t('personality.type.ume.rec1'),
+      t('personality.type.ume.rec2'),
+      t('personality.type.ume.rec3')
     ],
     'もも': [
-      "체계적인 단계별 학습",
-      "깊이 있는 주제 연구",
-      "개별 학습 시간 충분히 제공"
+      t('personality.type.momo.rec1'),
+      t('personality.type.momo.rec2'),
+      t('personality.type.momo.rec3')
     ],
     '모모': [
-      "체계적인 단계별 학습",
-      "깊이 있는 주제 연구",
-      "개별 학습 시간 충분히 제공"
+      t('personality.type.momo.rec1'),
+      t('personality.type.momo.rec2'),
+      t('personality.type.momo.rec3')
     ],
     'すもも': [
-      "그룹 활동 중심 학습",
-      "발표와 토론 기회 제공",
-      "실전 문제 해결 활동"
+      t('personality.type.sumomo.rec1'),
+      t('personality.type.sumomo.rec2'),
+      t('personality.type.sumomo.rec3')
     ],
     '스모모': [
-      "그룹 활동 중심 학습",
-      "발표와 토론 기회 제공",
-      "실전 문제 해결 활동"
+      t('personality.type.sumomo.rec1'),
+      t('personality.type.sumomo.rec2'),
+      t('personality.type.sumomo.rec3')
     ],
     'デジタル': [
-      "온라인 학습 도구 활용",
-      "데이터 기반 학습 방법",
-      "체계적인 문제 해결 접근"
+      t('personality.type.digital.rec1'),
+      t('personality.type.digital.rec2'),
+      t('personality.type.digital.rec3')
     ],
     '디지털': [
-      "온라인 학습 도구 활용",
-      "데이터 기반 학습 방법",
-      "체계적인 문제 해결 접근"
+      t('personality.type.digital.rec1'),
+      t('personality.type.digital.rec2'),
+      t('personality.type.digital.rec3')
     ],
     'アナログ': [
-      "hands-on 학습 활동",
-      "예술적 요소를 활용한 학습",
-      "자유로운 표현 활동"
+      t('personality.type.analog.rec1'),
+      t('personality.type.analog.rec2'),
+      t('personality.type.analog.rec3')
     ],
     '아날로그': [
-      "hands-on 학습 활동",
-      "예술적 요소를 활용한 학습",
-      "자유로운 표현 활동"
+      t('personality.type.analog.rec1'),
+      t('personality.type.analog.rec2'),
+      t('personality.type.analog.rec3')
     ]
   };
 
-  const primaryTypeDesc = typeDescriptions[report.result.primaryType] || "성향 설명이 없습니다.";
-  const secondaryTypeDesc = typeDescriptions[report.result.secondaryType] || "성향 설명이 없습니다.";
+  const primaryTypeDesc = typeDescriptions[report.result.primaryType] || t('common.noData');
+  const secondaryTypeDesc = typeDescriptions[report.result.secondaryType] || t('common.noData');
   const primaryRecommendations = learningRecommendations[report.result.primaryType] || [];
   const secondaryRecommendations = learningRecommendations[report.result.secondaryType] || [];
 
@@ -172,7 +174,7 @@ export default function PersonalityReportDetail() {
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-gray-800">성격 진단 상세 보고서</h1>
+              <h1 className="text-2xl font-bold text-gray-800">{t('report.detail.title')}</h1>
             </div>
             <UserHeader name={user.name} role={user.role} />
           </div>
@@ -186,16 +188,16 @@ export default function PersonalityReportDetail() {
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-4">
                 <User className="w-6 h-6 text-blue-600" />
-                <h2 className="text-lg font-semibold text-gray-800">학생 정보</h2>
+                <h2 className="text-lg font-semibold text-gray-800">{t('report.detail.studentInfo')}</h2>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-gray-500" />
-                  <p className="text-gray-600">이름: {student.name}</p>
+                  <p className="text-gray-600">{t('common.name')}: {student.name}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-gray-500" />
-                  <p className="text-gray-600">진단일: {report.testDate}</p>
+                  <p className="text-gray-600">{t('report.detail.testDate')}: {report.testDate}</p>
                 </div>
               </div>
             </div>
@@ -203,7 +205,7 @@ export default function PersonalityReportDetail() {
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-4">
                 <Brain className="w-6 h-6 text-blue-600" />
-                <h2 className="text-lg font-semibold text-gray-800">진단 결과</h2>
+                <h2 className="text-lg font-semibold text-gray-800">{t('report.result')}</h2>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -223,14 +225,16 @@ export default function PersonalityReportDetail() {
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <Target className="w-6 h-6 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-800">성격 유형 분석</h2>
+              <h2 className="text-xl font-semibold text-gray-800">{t('report.detail.analysis')}</h2>
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
                   {getPersonalityIcon(report.result.primaryType)}
-                  <h3 className="text-lg font-medium text-gray-800">주요 성향: {report.result.primaryType}</h3>
+                  <h3 className="text-lg font-medium text-gray-800">
+                    {t('report.detail.primaryType')}: {report.result.primaryType}
+                  </h3>
                 </div>
                 <div className="flex gap-2">
                   <Lightbulb className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-1" />
@@ -241,7 +245,9 @@ export default function PersonalityReportDetail() {
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
                   {getPersonalityIcon(report.result.secondaryType)}
-                  <h3 className="text-lg font-medium text-gray-800">보조 성향: {report.result.secondaryType}</h3>
+                  <h3 className="text-lg font-medium text-gray-800">
+                    {t('report.detail.secondaryType')}: {report.result.secondaryType}
+                  </h3>
                 </div>
                 <div className="flex gap-2">
                   <Lightbulb className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-1" />
@@ -255,14 +261,14 @@ export default function PersonalityReportDetail() {
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-6 h-6 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-800">맞춤형 학습 추천</h2>
+              <h2 className="text-xl font-semibold text-gray-800">{t('report.detail.recommendations')}</h2>
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <BookOpen className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-lg font-medium text-gray-800">주요 성향 기반 추천</h3>
+                  <h3 className="text-lg font-medium text-gray-800">{t('report.detail.primaryType')}</h3>
                 </div>
                 <ul className="space-y-2">
                   {primaryRecommendations.map((item, index) => (
@@ -277,7 +283,7 @@ export default function PersonalityReportDetail() {
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <BookOpen className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-lg font-medium text-gray-800">보조 성향 기반 추천</h3>
+                  <h3 className="text-lg font-medium text-gray-800">{t('report.detail.secondaryType')}</h3>
                 </div>
                 <ul className="space-y-2">
                   {secondaryRecommendations.map((item, index) => (

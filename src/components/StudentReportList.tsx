@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { Student } from '../types';
 import UserHeader from './UserHeader';
+import { useLocale } from '../contexts/LocaleContext';
 
 const getPersonalityIcon = (type: string) => {
   switch (type) {
@@ -89,11 +90,12 @@ export default function StudentReportList() {
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const student = location.state?.student;
+  const { t } = useLocale();
 
   if (!student) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-red-600">학생 정보를 찾을 수 없습니다.</div>
+        <div className="text-red-600">{t('common.noData')}</div>
       </div>
     );
   }
@@ -115,7 +117,7 @@ export default function StudentReportList() {
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-gray-800">성격 진단 레포트</h1>
+              <h1 className="text-2xl font-bold text-gray-800">{t('report.title')}</h1>
             </div>
             <UserHeader name={user.name} role={user.role} />
           </div>
@@ -126,13 +128,13 @@ export default function StudentReportList() {
         <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">학생 정보</h2>
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">{t('report.studentInfo')}</h2>
               <div className="space-y-2">
-                <p className="text-gray-600">이름: {student.name}</p>
-                <p className="text-gray-600">입학일: {student.admissionDate || '-'}</p>
+                <p className="text-gray-600">{t('common.name')}: {student.name}</p>
+                <p className="text-gray-600">{t('auth.signup.admissionDate')}: {student.admissionDate || '-'}</p>
                 {student.personalityResult && (
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-600">현재 성격 유형:</span>
+                    <span className="text-gray-600">{t('personality.test.title')}:</span>
                     <PersonalityDisplay 
                       student={student}
                       primaryType={student.personalityResult.primaryType} 
@@ -145,17 +147,17 @@ export default function StudentReportList() {
             </div>
             
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">학부모 정보</h2>
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">{t('report.parentInfo')}</h2>
               {student.familyInfo?.parentName ? (
                 <p className="text-gray-600">{student.familyInfo.parentName}</p>
               ) : (
-                <p className="text-gray-500 italic">등록된 학부모 정보가 없습니다</p>
+                <p className="text-gray-500 italic">{t('report.noParentInfo')}</p>
               )}
             </div>
           </div>
 
           <div className="mt-8">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">레포트 일람</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('report.list')}</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-blue-50">
@@ -164,10 +166,10 @@ export default function StudentReportList() {
                       No
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      진단일
+                      {t('report.date')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      진단 결과
+                      {t('report.result')}
                     </th>
                   </tr>
                 </thead>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { GraduationCap, User, Users, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import LocaleToggle from './LocaleToggle';
 
 interface UserHeaderProps {
   name: string;
@@ -55,6 +56,8 @@ export default function UserHeader({ name, role }: UserHeaderProps) {
 
   return (
     <div className="flex items-center gap-2">
+      <LocaleToggle />
+      
       <button
         onClick={handleHomeClick}
         className="flex items-center gap-2 bg-white px-3 py-2 rounded-full shadow-sm hover:bg-gray-50 transition-all duration-200 border border-gray-200 group"

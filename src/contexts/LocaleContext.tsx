@@ -5,7 +5,7 @@ type Locale = 'ko' | 'ja';
 interface LocaleContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
 }
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
@@ -38,6 +38,8 @@ const translations = {
     'common.signup': '회원가입',
     'common.logout': '로그아웃',
     'common.home': '홈',
+    'common.menu': '메뉴',
+    'common.close': '닫기',
 
     // Auth
     'auth.login.title': '교육 관리 시스템',
@@ -64,13 +66,13 @@ const translations = {
     'dashboard.student.title': '학생 대시보드',
     'dashboard.parent.title': '학부모 대시보드',
     'dashboard.welcome': '안녕하세요, {name}님!',
-    'dashboard.welcome.message': '오늘도 함께 성장해보아요',
+    'dashboard.welcome.message': '안녕하세요, 오늘도 함께 이야기해보아요.',
     'dashboard.search.placeholder': '학생 이름 또는 아이디로 검색...',
     'dashboard.filter.unresolvedOnly': '미해결 위험요소만 보기',
     'dashboard.recentActivity': '최근 활동',
 
     // Student Menu
-    'student.menu.typeCheck': '타입진단',
+    'student.menu.typeCheck': '성격 진단 테스트',
     'student.menu.typeCheck.desc': '나의 성향과 학습 스타일을 알아보세요',
     'student.menu.chatbot': '챗봇상담',
     'student.menu.chatbot.desc': '궁금한 점을 자유롭게 물어보세요',
@@ -78,6 +80,16 @@ const translations = {
     'student.menu.matchingQa.desc': '학부모님의 질문에 답변해주세요',
     'student.activity.typeCheck': '성격 진단 완료',
     'student.activity.chatbot': '챗봇 상담',
+    'student.menu.report.desc': '나의 성격 진단 결과를 확인해보세요',
+
+    // Student Chat
+    'student.chatbot.placeholder': '메시지를 입력하세요...',
+    'student.chatbot.send': '메시지 보내기',
+    'student.chatbot.error': '메시지 전송에 실패했습니다. 다시 시도해주세요.',
+    'student.chatbot.response1': "네, 말씀해 주세요. 제가 도와드리겠습니다.",
+    'student.chatbot.response2': "흥미로운 이야기네요. 더 자세히 들려주시겠어요?",
+    'student.chatbot.response3': "그렇군요. 제가 도움이 될 만한 제안을 해드릴게요.",
+    'student.chatbot.response4': "좋은 질문이에요. 함께 고민해보도록 할까요?",
 
     // Personality Test
     'personality.test.title': '성격 진단 테스트',
@@ -112,30 +124,31 @@ const translations = {
     'report.detail.testDate': '진단일',
     'report.detail.learningStyle': '학습 스타일',
 
-     // Risk
-	  'risk.management':'위험요소 관리',
-	  'risk.studentInfo':'학생 정보',
-	  'risk.parentInfo':'학부모 정보',
-	  'risk.status':'위험요소 현황',
-	  'risk.totalRisks':'총 위험요소',
-	  'risk.unresolvedRisks':'미해결',
-	  'risk.resolvedRisks':'해결완료',
-	  'risk.resolutionRate':'해결률',
-	  'risk.list':'위험요소 목록',
-	  'risk.enterResolution':'해결 내용 입력',
-	  'risk.resolutionContent':'해결 내용',
-	  'risk.resolutionPlaceholder':'해결 방안이나 조치 내용을 입력해 주세요',
-	  'risk.marksAsResolved':'해결 처리',
+    // Risk
+    'risk.management': '위험요소 관리',
+    'risk.studentInfo': '학생 정보',
+    'risk.parentInfo': '학부모 정보',
+    'risk.status': '위험요소 현황',
+    'risk.totalRisks': '총 위험요소',
+    'risk.unresolvedRisks': '미해결',
+    'risk.resolvedRisks': '해결완료',
+    'risk.resolutionRate': '해결률',
+    'risk.list': '위험요소 목록',
+    'risk.enterResolution': '해결 내용 입력',
+    'risk.resolutionContent': '해결 내용',
+    'risk.resolutionPlaceholder': '해결 방안이나 조치 내용을 입력해 주세요',
+    'risk.markAsResolved': '해결 처리',
+    'risk.admissionDate': '최근의 위험요소 감지',
 
     // personality type
-	  'personality.type.sumomo.desc':'활발하고 적극적이며, 다른 사람들과 어울리기를 좋아합니다.',
-	  'personality.type.digital.desc':'논리적이고 체계적인 접근을 선호하며, 효율성을 중시합니다.',
-	  'personality.type.sumomo.rec1':'그룹 활동 중심 학습',
-	  'personality.type.sumomo.rec2':'발표와 토론 기회 제공',
-	  'personality.type.sumomo.rec3':'실전 문제 해결 활동',
-	  'personality.type.digital.rec1':'온라인 학습 도구 활용',
-	  'personality.type.digital.rec2':'데이터 기반 학습 방법',
-	  'personality.type.digital.rec3':'체계적인 문제 해결 접근',
+    'personality.type.sumomo.desc': '활발하고 적극적이며, 다른 사람들과 어울리기를 좋아합니다.',
+    'personality.type.digital.desc': '논리적이고 체계적인 접근을 선호하며, 효율성을 중시합니다.',
+    'personality.type.sumomo.rec1': '그룹 활동 중심 학습',
+    'personality.type.sumomo.rec2': '발표와 토론 기회 제공',
+    'personality.type.sumomo.rec3': '실전 문제 해결 활동',
+    'personality.type.digital.rec1': '온라인 학습 도구 활용',
+    'personality.type.digital.rec2': '데이터 기반 학습 방법',
+    'personality.type.digital.rec3': '체계적인 문제 해결 접근',
   },
   ja: {
     // Common
@@ -164,6 +177,8 @@ const translations = {
     'common.signup': '会員登録',
     'common.logout': 'ログアウト',
     'common.home': 'ホーム',
+    'common.menu': 'メニュー',
+    'common.close': '閉じる',
 
     // Auth
     'auth.login.title': '教育管理システム',
@@ -190,13 +205,13 @@ const translations = {
     'dashboard.student.title': '生徒ダッシュボード',
     'dashboard.parent.title': '保護者ダッシュボード',
     'dashboard.welcome': 'こんにちは、{name}さん！',
-    'dashboard.welcome.message': '今日も一緒に成長しましょう',
+    'dashboard.welcome.message': 'こんにちは、今日も一緒にお話ししましょう。',
     'dashboard.search.placeholder': '生徒名またはIDで検索...',
     'dashboard.filter.unresolvedOnly': '未解決のリスクのみ表示',
     'dashboard.recentActivity': '最近の活動',
 
     // Student Menu
-    'student.menu.typeCheck': 'タイプ診断',
+    'student.menu.typeCheck': '性格診断テスト',
     'student.menu.typeCheck.desc': '自分の傾向と学習スタイルを知りましょう',
     'student.menu.chatbot': 'チャットボット相談',
     'student.menu.chatbot.desc': '気になることを自由に質問してください',
@@ -204,6 +219,16 @@ const translations = {
     'student.menu.matchingQa.desc': '保護者からの質問に答えてください',
     'student.activity.typeCheck': '性格診断完了',
     'student.activity.chatbot': 'チャットボット相談',
+    'student.menu.report.desc': '自分の性格診断結果を確認してみましょう',
+
+    // Student Chat
+    'student.chatbot.placeholder': 'メッセージを入力してください...',
+    'student.chatbot.send': 'メッセージを送信',
+    'student.chatbot.error': 'メッセージの送信に失敗しました。もう一度お試しください。',
+    'student.chatbot.response1': "はい、どうぞお話しください。お手伝いさせていただきます。",
+    'student.chatbot.response2': "興味深いお話ですね。もう少し詳しく教えていただけますか？",
+    'student.chatbot.response3': "なるほど。お役に立てそうな提案をさせていただきます。",
+    'student.chatbot.response4': "良い質問ですね。一緒に考えてみましょうか？",
 
     // Personality Test
     'personality.test.title': '性格診断テスト',
@@ -237,7 +262,32 @@ const translations = {
     'report.detail.studentInfo': '生徒情報',
     'report.detail.testDate': '診断日',
     'report.detail.learningStyle': '学習スタイル',
-    
+
+    // Risk
+    'risk.management': 'リスク要素の管理',
+    'risk.studentInfo': '生徒情報',
+    'risk.parentInfo': '保護者情報',
+    'risk.status': 'リスク要素の状況',
+    'risk.totalRisks': '総リスク要素',
+    'risk.unresolvedRisks': '未解決',
+    'risk.resolvedRisks': '解決完了',
+    'risk.resolutionRate': '解決率',
+    'risk.list': 'リスク要素リスト',
+    'risk.enterResolution': '解決内容の入力',
+    'risk.resolutionContent': '解決内容',
+    'risk.resolutionPlaceholder': '解決策やアクションの内容を入力してください',
+    'risk.markAsResolved': '解決処理',
+    'risk.admissionDate': '直近のリスク検知',
+
+    // personality type
+    'personality.type.sumomo.desc': '活発で積極的で、他の人との交流が大好きです。',
+    'personality.type.digital.desc': '論理的かつ体系的なアプローチを好み、効率性を重視します。',
+    'personality.type.sumomo.rec1': 'グループ活動指向学習',
+    'personality.type.sumomo.rec2': '発表とディスカッションの機会を提供する',
+    'personality.type.sumomo.rec3': '実践的な問題解決活動',
+    'personality.type.digital.rec1': 'オンライン学習ツールの活用',
+    'personality.type.digital.rec2': 'データベースの学習方法',
+    'personality.type.digital.rec3': '体系的な問題解決アプローチ',
   }
 };
 
