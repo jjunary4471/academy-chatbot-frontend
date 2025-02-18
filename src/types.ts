@@ -1,8 +1,10 @@
 export type UserRole = 'TEACHER' | 'STUDENT' | 'PARENT';
 
 export interface FamilyInfo {
-  parentId: string;
-  parentName: string;
+  parentId?: string;
+  parentName?: string;
+  childId?: string;
+  childName?: string;
 }
 
 export interface PersonalityResult {

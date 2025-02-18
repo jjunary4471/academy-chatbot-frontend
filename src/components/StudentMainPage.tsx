@@ -6,10 +6,13 @@ import {
   Bot,
   UserIcon,
   Loader2,
-  ClipboardList,
   FileText,
   X,
-  AlertCircle
+  AlertCircle,
+  Home,
+  Headphones,
+  Users,
+  ClipboardList
 } from 'lucide-react';
 import UserHeader from './UserHeader';
 import { useLocale } from '../contexts/LocaleContext';
@@ -30,10 +33,8 @@ export default function StudentMainPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -54,20 +55,6 @@ export default function StudentMainPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // 메뉴 외부 클릭 시 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -98,7 +85,6 @@ export default function StudentMainPage() {
         throw new Error(t('student.chatbot.error'));
       }
 
-      // Remove quotes from the response string
       return data.response.replace(/^"|"$/g, '');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -155,148 +141,134 @@ export default function StudentMainPage() {
     }).format(date);
   };
 
-  const menuItems = [
-    {
-      id: 'personality-test',
-      title: t('student.menu.typeCheck'),
-      description: t('student.menu.typeCheck.desc'),
-      icon: <ClipboardList className="w-5 h-5" />,
-      onClick: () => {
-        navigate('/personality-test');
-        setIsMenuOpen(false);
-      }
-    },
-    {
-      id: 'personality-report',
-      title: t('report.title'),
-      description: t('student.menu.report.desc'),
-      icon: <FileText className="w-5 h-5" />,
-      onClick: () => {
-        if (user.personalityResult) {
-          const mockReport = {
-            id: `${user.id}-${new Date().toISOString().split('T')[0]}`,
-            studentId: user.id,
-            testDate: new Date().toISOString().split('T')[0],
-            result: user.personalityResult
-          };
-          navigate('/personality-report', { 
-            state: { 
-              student: user,
-              report: mockReport
-            } 
-          });
-        }
-        setIsMenuOpen(false);
-      },
-      disabled: !user.personalityResult
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
+
+  const handleViewReport = () => {
+    if (user.personalityResult) {
+      const mockReport = {
+        id: `${user.id}-${user.personalityResult.diagnosisDate || new Date().toISOString().split('T')[0]}`,
+        studentId: user.id,
+        testDate: user.personalityResult.diagnosisDate || new Date().toISOString().split('T')[0],
+        result: user.personalityResult
+      };
+      navigate('/personality-report', { 
+        state: { 
+          student: user,
+          report: mockReport
+        } 
+      });
     }
-  ];
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            {/* 햄버거 메뉴 */}
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 transition-colors"
-                aria-label={isMenuOpen ? t('common.close') : t('common.menu')}
+            <h1 className="text-xl font-bold">학원상담</h1>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => handleNavigation('/student-main')}
+                className="p-2 text-gray-600 hover:text-gray-900"
               >
-                {isMenuOpen ? (
-                  <X className="w-5 h-5 text-blue-600" />
-                ) : (
-                  <Menu className="w-5 h-5 text-blue-600" />
-                )}
+                <Home className="w-6 h-6" />
               </button>
-
-              {/* 메뉴 드롭다운 */}
-              {isMenuOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50">
-                  {menuItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={item.onClick}
-                      disabled={item.disabled}
-                      className={`w-full px-4 py-2 flex flex-col gap-1 transition-colors ${
-                        item.disabled 
-                          ? 'opacity-50 cursor-not-allowed' 
-                          : 'hover:bg-blue-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-blue-600">{item.icon}</span>
-                        <span className="text-gray-700">{item.title}</span>
-                      </div>
-                      <span className="text-xs text-gray-500 pl-8">{item.description}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <button 
+                onClick={() => handleNavigation('/student-main')}
+                className="p-2 text-gray-600 hover:text-gray-900"
+              >
+                <Headphones className="w-6 h-6" />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-gray-900">
+                <Users className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={() => handleNavigation('/personality-test')}
+                className="p-2 text-gray-600 hover:text-gray-900"
+              >
+                <ClipboardList className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={handleViewReport}
+                disabled={!user.personalityResult}
+                className={`p-2 ${user.personalityResult ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 cursor-not-allowed'}`}
+              >
+                <FileText className="w-6 h-6" />
+              </button>
             </div>
-
-            <UserHeader name={user.name} role={user.role} />
           </div>
         </div>
       </div>
 
-      {/* Chat Container */}
-      <div className="flex-1 max-w-3xl w-full mx-auto px-4 py-6 overflow-hidden flex flex-col">
+      {/* Welcome Banner */}
+      <div className="bg-yellow-50 border-b border-yellow-100">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <p className="text-center text-gray-800">
+            학생 {user.name} 님 환영합니다
+          </p>
+        </div>
+      </div>
+
+      {/* Main Container */}
+      <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto mb-4 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`flex items-start gap-2 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  message.type === 'user' ? 'bg-blue-100' : message.error ? 'bg-red-100' : 'bg-green-100'
-                }`}>
-                  {message.type === 'user' ? (
-                    <UserIcon className="w-5 h-5 text-blue-600" />
-                  ) : message.error ? (
-                    <AlertCircle className="w-5 h-5 text-red-600" />
-                  ) : (
-                    <Bot className="w-5 h-5 text-green-600" />
-                  )}
-                </div>
-                <div className={`flex flex-col ${message.type === 'user' ? 'items-end' : 'items-start'}`}>
-                  <div className={`rounded-2xl px-4 py-2 ${
-                    message.type === 'user' 
-                      ? 'bg-blue-500 text-white' 
-                      : message.error
-                      ? 'bg-red-50 text-red-600 border border-red-200'
-                      : 'bg-white text-gray-800'
+        <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`flex items-start gap-2 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    message.type === 'user' ? 'bg-blue-100' : message.error ? 'bg-red-100' : 'bg-green-100'
                   }`}>
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    {message.type === 'user' ? (
+                      <UserIcon className="w-5 h-5 text-blue-600" />
+                    ) : message.error ? (
+                      <AlertCircle className="w-5 h-5 text-red-600" />
+                    ) : (
+                      <Bot className="w-5 h-5 text-green-600" />
+                    )}
                   </div>
-                  <span className="text-xs text-gray-500 mt-1">
-                    {formatTime(message.timestamp)}
-                  </span>
+                  <div className={`flex flex-col ${message.type === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div className={`rounded-2xl px-4 py-2 ${
+                      message.type === 'user' 
+                        ? 'bg-blue-500 text-white' 
+                        : message.error
+                        ? 'bg-red-50 text-red-600 border border-red-200'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                    <span className="text-xs text-gray-500 mt-1">
+                      {formatTime(message.timestamp)}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="flex items-start gap-2 max-w-[80%]">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-100">
-                  <Bot className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="bg-white rounded-2xl px-4 py-2">
-                  <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+            ))}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="flex items-start gap-2 max-w-[80%]">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-100">
+                    <Bot className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div className="bg-gray-100 rounded-2xl px-4 py-2">
+                    <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
-        {/* Input Area */}
-        <div className="bg-white rounded-2xl shadow-lg p-4">
+        {/* Input Area - Fixed at bottom */}
+        <div className="border-t bg-white px-4 py-4">
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <textarea

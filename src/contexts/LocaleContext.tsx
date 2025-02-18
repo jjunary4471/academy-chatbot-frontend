@@ -82,6 +82,15 @@ const translations = {
     'student.activity.chatbot': '챗봇 상담',
     'student.menu.report.desc': '나의 성격 진단 결과를 확인해보세요',
 
+    // Parent Menu
+    'parent.menu.report.desc': '자녀의 성격 진단 결과를 확인해보세요',
+    'parent.menu.chatbot.desc': '자녀의 학습과 관련된 상담을 해보세요',
+    'parent.childInfo': '자녀 정보',
+    'parent.childName': '자녀 이름',
+    'parent.noChildInfo': '등록된 자녀 정보가 없습니다',
+    'parent.chatbot.placeholder': '자녀의 학습에 대해 궁금한 점을 물어보세요...',
+    'parent.chatbot.error': '메시지 전송에 실패했습니다. 다시 시도해주세요.',
+
     // Student Chat
     'student.chatbot.placeholder': '메시지를 입력하세요...',
     'student.chatbot.send': '메시지 보내기',
@@ -220,6 +229,15 @@ const translations = {
     'student.activity.typeCheck': '性格診断完了',
     'student.activity.chatbot': 'チャットボット相談',
     'student.menu.report.desc': '自分の性格診断結果を確認してみましょう',
+
+    // Parent Menu
+    'parent.menu.report.desc': 'お子様の性格診断結果を確認してください',
+    'parent.menu.chatbot.desc': 'お子様の学習に関する相談をしてみましょう',
+    'parent.childInfo': 'お子様の情報',
+    'parent.childName': 'お子様の名前',
+    'parent.noChildInfo': '登録されているお子様の情報がありません',
+    'parent.chatbot.placeholder': 'お子様の学習について気になることを質問してください...',
+    'parent.chatbot.error': 'メッセージの送信に失敗しました。もう一度お試しください。',
 
     // Student Chat
     'student.chatbot.placeholder': 'メッセージを入力してください...',
