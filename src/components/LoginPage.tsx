@@ -47,7 +47,7 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch(`/api/users/${userId}`);
+      const response = await fetch(`https://coipekj2sl.execute-api.ap-northeast-1.amazonaws.com/dev/users/${userId}`);
       
       if (!response.ok) {
         if (response.status === 404) {

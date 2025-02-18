@@ -10,6 +10,7 @@ export interface FamilyInfo {
 export interface PersonalityResult {
   primaryType: string;
   secondaryType: string;
+  diagnosisDate?: string;
 }
 
 export interface User {
