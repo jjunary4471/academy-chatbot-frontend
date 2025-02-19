@@ -1,10 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
+  ArrowLeft,
   Home,
   Users,
-  FileText,
-  ClipboardList
+  ClipboardList,
+  FileText
 } from 'lucide-react';
 import { useLocale } from '../../contexts/LocaleContext';
 import type { User } from '../../types';
@@ -18,15 +19,35 @@ export default function NavigationHeader({ title, activeNavId }: NavigationHeade
   const navigate = useNavigate();
   const { t } = useLocale();
   const user = JSON.parse(localStorage.getItem('user') || '{}') as User;
+  const isTeacher = user.role === 1;
 
-  const navItems = [
+  const teacherNavItems = [
+    {
+      id: 'home',
+      icon: <Home className="w-6 h-6" />,
+      activeIcon: <Home className="w-6 h-6 text-blue-600" />,
+      label: t('common.home'),
+      description: t('common.login'),
+      onClick: () => navigate('/')
+    },
+    {
+      id: 'admin',
+      icon: <Users className="w-6 h-6" />,
+      activeIcon: <Users className="w-6 h-6 text-blue-600" />,
+      label: t('dashboard.admin.title'),
+      description: t('dashboard.admin.title'),
+      onClick: () => navigate('/admin')
+    }
+  ];
+
+  const studentNavItems = [
     {
       id: 'home',
       icon: <Home className="w-6 h-6" />,
       activeIcon: <Home className="w-6 h-6 text-blue-600" />,
       label: t('common.home'),
       description: t('student.menu.home.desc'),
-      onClick: () => navigate('/student-main')
+      onClick: () => navigate('/')
     },
     {
       id: 'chat',
@@ -90,11 +111,22 @@ export default function NavigationHeader({ title, activeNavId }: NavigationHeade
     }
   ];
 
+  const navItems = isTeacher ? teacherNavItems : studentNavItems;
+
   return (
     <div className="bg-white border-b">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-xl font-bold">{title}</h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+              aria-label={t('common.back')}
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h1 className="text-xl font-bold">{title}</h1>
+          </div>
           <div className="flex items-center gap-2">
             {navItems.map((item) => (
               <div key={item.id} className="relative group">

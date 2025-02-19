@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft,
   User,
   Users,
   Calendar,
@@ -14,9 +13,9 @@ import {
 } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
-import UserHeader from './UserHeader';
 import { useLocale } from '../contexts/LocaleContext';
 import { fetchApi } from '../utils/api';
+import NavigationHeader from './shared/NavigationHeader';
 import type { Student, RiskHistory } from '../types';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -185,22 +184,10 @@ export default function RiskFactorManagement() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/admin')}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <h1 className="text-2xl font-bold text-gray-800">{t('risk.management')}</h1>
-            </div>
-            <UserHeader name={user.name} role={user.role} />
-          </div>
-        </div>
-      </div>
+      <NavigationHeader 
+        title={t('risk.management')}
+        activeNavId="admin"
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid md:grid-cols-2 gap-6 mb-8">

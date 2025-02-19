@@ -42,13 +42,6 @@ export default function StudentMainPage() {
     scrollToBottom();
   }, [messages]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
   const sendMessageToServer = async (message: string): Promise<string> => {
     try {
       const response = await fetchApi('/students/chat', {
@@ -191,7 +184,6 @@ export default function StudentMainPage() {
                 ref={inputRef}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleKeyPress}
                 placeholder={t('student.chatbot.placeholder')}
                 className="w-full resize-none rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent p-3 max-h-32"
                 rows={1}

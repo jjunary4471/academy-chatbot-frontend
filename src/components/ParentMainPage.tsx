@@ -14,15 +14,7 @@ import {
 import UserHeader from './UserHeader';
 import { useLocale } from '../contexts/LocaleContext';
 import { fetchApi } from '../utils/api';
-import type { User, Student } from '../types';
-
-interface Message {
-  id: string;
-  type: 'bot' | 'user';
-  content: string;
-  timestamp: Date;
-  error?: boolean;
-}
+import type { User, Student, Message } from '../types';
 
 export default function ParentMainPage() {
   const navigate = useNavigate();
@@ -91,13 +83,6 @@ export default function ParentMainPage() {
     };
   }, []);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
   const sendMessageToServer = async (message: string): Promise<string> => {
     try {
       const response = await fetchApi('/parents/chat', {
@@ -161,32 +146,34 @@ export default function ParentMainPage() {
     }).format(date);
   };
 
+  const handleViewReport = () => {
+    if (childInfo?.personalityResult) {
+      const mockReport = {
+        id: `${childInfo.id}-${childInfo.personalityResult.diagnosisDate || new Date().toISOString().split('T')[0]}`,
+        studentId: childInfo.id,
+        testDate: childInfo.personalityResult.diagnosisDate || new Date().toISOString().split('T')[0],
+        result: {
+          primaryType: childInfo.personalityResult.primaryType,
+          secondaryType: childInfo.personalityResult.secondaryType
+        }
+      };
+      navigate('/personality-report', { 
+        state: { 
+          student: childInfo,
+          report: mockReport
+        } 
+      });
+    }
+    setIsMenuOpen(false);
+  };
+
   const menuItems = [
     {
       id: 'personality-report',
       title: t('report.title'),
       description: t('parent.menu.report.desc'),
       icon: <FileText className="w-5 h-5" />,
-      onClick: () => {
-        if (childInfo?.personalityResult) {
-          const mockReport = {
-            id: `${childInfo.id}-${childInfo.personalityResult.diagnosisDate || new Date().toISOString().split('T')[0]}`,
-            studentId: childInfo.id,
-            testDate: childInfo.personalityResult.diagnosisDate || new Date().toISOString().split('T')[0],
-            result: {
-              primaryType: childInfo.personalityResult.primaryType,
-              secondaryType: childInfo.personalityResult.secondaryType
-            }
-          };
-          navigate('/personality-report', { 
-            state: { 
-              student: childInfo,
-              report: mockReport
-            } 
-          });
-        }
-        setIsMenuOpen(false);
-      },
+      onClick: handleViewReport,
       disabled: !childInfo?.personalityResult
     }
   ];
@@ -323,7 +310,6 @@ export default function ParentMainPage() {
                 ref={inputRef}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleKeyPress}
                 placeholder={t('parent.chatbot.placeholder')}
                 className="w-full resize-none rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent p-3 max-h-32"
                 rows={1}

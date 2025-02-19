@@ -24,6 +24,7 @@ import {
 import { Student } from '../types';
 import UserHeader from './UserHeader';
 import { useLocale } from '../contexts/LocaleContext';
+import { fetchApi } from '../utils/api';
 
 const getPersonalityIcon = (type: string) => {
   switch (type) {
@@ -135,11 +136,7 @@ export default function AdminPage() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch(`/api/academies/${user.academyId}/students`);
-        if (!response.ok) {
-          throw new Error(t('common.noData'));
-        }
-        const data = await response.json();
+        const data = await fetchApi(`/academies/${user.academyId}/students`);
         setStudents(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : t('common.noData'));
