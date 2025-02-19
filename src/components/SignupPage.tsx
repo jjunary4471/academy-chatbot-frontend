@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { useLocale } from '../contexts/LocaleContext';
 import LocaleToggle from './LocaleToggle';
+import { fetchApi } from '../utils/api';
 import type { SignupForm } from '../types';
 
 export default function SignupPage() {
@@ -12,7 +13,7 @@ export default function SignupPage() {
     academyId: '',
     id: '',
     name: '',
-    role: 2, // Default to STUDENT
+    role: 2,
     email: '',
     childId: '',
     admissionDate: '',
@@ -26,44 +27,21 @@ export default function SignupPage() {
     setError('');
 
     try {
-      const payload = {
-        ...formData,
-      };
+      const payload = { ...formData };
       
-      // Remove childId if not PARENT
       if (formData.role !== 3) {
         delete payload.childId;
       }
 
-      // Remove admissionDate if not STUDENT
       if (formData.role !== 2) {
         delete payload.admissionDate;
       }
 
-      console.log('Sending signup request with payload:', payload);
-
-      const response = await fetch('/api/users', {
+      await fetchApi('/users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error('Signup failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorData,
-        });
-        throw new Error(
-          errorData?.message || 
-          `회원가입에 실패했습니다. (Status: ${response.status})`
-        );
-      }
-
-      console.log('Signup successful');
       navigate('/', { state: { message: t('auth.signup.success') } });
     } catch (err) {
       console.error('Signup error:', err);
@@ -79,7 +57,6 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">
-      {/* Language Toggle */}
       <div className="fixed top-4 right-4">
         <LocaleToggle />
       </div>

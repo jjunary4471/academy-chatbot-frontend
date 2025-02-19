@@ -81,6 +81,9 @@ const translations = {
     'student.activity.typeCheck': '성격 진단 완료',
     'student.activity.chatbot': '챗봇 상담',
     'student.menu.report.desc': '나의 성격 진단 결과를 확인해보세요',
+    'student.menu.community':'챗봇 친구',
+    'student.menu.community.desc':'챗봇에서의 질문에 답변해주세요',
+
 
     // Parent Menu
     'parent.menu.report.desc': '자녀의 성격 진단 결과를 확인해보세요',
@@ -229,6 +232,8 @@ const translations = {
     'student.activity.typeCheck': '性格診断完了',
     'student.activity.chatbot': 'チャットボット相談',
     'student.menu.report.desc': '自分の性格診断結果を確認してみましょう',
+    'student.menu.community':'チャットボット友達',
+    'student.menu.community.desc':'チャットボットからの質問に答えてください',
 
     // Parent Menu
     'parent.menu.report.desc': 'お子様の性格診断結果を確認してください',

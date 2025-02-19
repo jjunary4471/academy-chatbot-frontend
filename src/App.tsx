@@ -11,6 +11,7 @@ import StudentReportList from './components/StudentReportList';
 import PersonalityReportDetail from './components/PersonalityReportDetail';
 import PersonalityTest from './components/PersonalityTest';
 import RiskFactorManagement from './components/RiskFactorManagement';
+import CommunityChat from './components/CommunityChat';
 import { useLocale } from './contexts/LocaleContext';
 
 function AppContent() {
@@ -28,6 +29,7 @@ function AppContent() {
         <Route path="/student/:studentId/risk-factors" element={<RiskFactorManagement />} />
         <Route path="/personality-report" element={<PersonalityReportDetail />} />
         <Route path="/personality-test" element={<PersonalityTest />} />
+        <Route path="/community" element={<CommunityChat />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

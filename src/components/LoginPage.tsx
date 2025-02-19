@@ -4,6 +4,7 @@ import { School } from 'lucide-react';
 import { useLocale } from '../contexts/LocaleContext';
 import { useAuth } from '../contexts/AuthContext';
 import LocaleToggle from './LocaleToggle';
+import { fetchApi } from '../utils/api';
 import type { User } from '../types';
 
 export default function LoginPage() {
@@ -17,7 +18,6 @@ export default function LoginPage() {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    // 이미 인증된 사용자는 역할에 맞는 페이지로 리다이렉트
     if (isAuthenticated) {
       const user = JSON.parse(localStorage.getItem('user') || '{}') as User;
       switch (user.role) {
@@ -47,19 +47,9 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch(`https://coipekj2sl.execute-api.ap-northeast-1.amazonaws.com/dev/users/${userId}`);
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error(t('auth.login.userNotFound'));
-        }
-        throw new Error(t('auth.login.failed'));
-      }
-
-      const userData: User = await response.json();
+      const userData = await fetchApi(`/users/${userId}`);
       localStorage.setItem('user', JSON.stringify(userData));
 
-      // Redirect based on role
       switch (userData.role) {
         case 1:
           navigate('/admin');
@@ -87,7 +77,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">
-      {/* Language Toggle */}
       <div className="fixed top-4 right-4">
         <LocaleToggle />
       </div>

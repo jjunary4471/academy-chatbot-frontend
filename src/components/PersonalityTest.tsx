@@ -5,11 +5,13 @@ import {
   ArrowRight,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { questions, Question } from '../data/personalityQuestions';
-import UserHeader from './UserHeader';
 import { useLocale } from '../contexts/LocaleContext';
+import { fetchApi } from '../utils/api';
+import NavigationHeader from './shared/NavigationHeader';
 
 const QUESTIONS_PER_SECTION = 10;
 const SECTIONS = ['A', 'B', 'C', 'D', 'E', 'S'];
@@ -20,18 +22,18 @@ interface Answer {
 }
 
 interface PersonalityResult {
-  primaryType: '벗꽃' | '복숭아' | '자두' | '매실';
+  primaryType: '사쿠라' | '모모' | '스모모' | '우메';
   secondaryType: '디지털' | '아날로그';
 }
 
 export default function PersonalityTest() {
   const navigate = useNavigate();
+  const { t } = useLocale();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const [currentSection, setCurrentSection] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { t } = useLocale();
 
   const currentQuestions = questions.filter(q => q.section === SECTIONS[currentSection]);
   const sectionAnswers = answers.filter(a => 
@@ -66,19 +68,15 @@ export default function PersonalityTest() {
 
     let primaryType: PersonalityResult['primaryType'];
 
-    // さくら (벗꽃)
     if (aScore < 5 && bScore >= 5 && cScore >= 5 && dScore >= 5 && eScore < 5) {
       primaryType = '사쿠라';
     }
-    // うめ (매실)
     else if (aScore >= 5 && bScore < 5 && cScore >= 5 && dScore >= 5 && eScore < 5) {
       primaryType = '우메';
     }
-    // もも (복숭아)
     else if (aScore < 5 && bScore < 5 && cScore >= 5 && dScore < 5 && eScore >= 5) {
       primaryType = '모모';
     }
-    // すもも (자두)
     else if (aScore >= 5 && bScore < 5 && cScore >= 5 && dScore < 5 && eScore >= 5) {
       primaryType = '스모모';
     }
@@ -98,12 +96,8 @@ export default function PersonalityTest() {
         throw new Error(t('auth.login.userNotFound'));
       }
 
-      const response = await fetch(`/api/students/${user.id}/personalityResult`, {
+      await fetchApi(`/students/${user.id}/personalityResult`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': '*/*'
-        },
         body: JSON.stringify({
           academyId: user.academyId,
           diagnosisDate: new Date().toISOString().split('T')[0],
@@ -111,14 +105,6 @@ export default function PersonalityTest() {
           secondaryType: result.secondaryType
         }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(
-          errorData?.message || 
-          t('personality.test.error')
-        );
-      }
 
       alert(t('personality.test.complete'));
       navigate('/student-main');
@@ -164,23 +150,10 @@ export default function PersonalityTest() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
-      {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-10 bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate(-1)}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <h1 className="text-2xl font-bold text-gray-800">{t('personality.test.title')}</h1>
-            </div>
-            <UserHeader name={user.name} role={user.role} />
-          </div>
-        </div>
-      </div>
+      <NavigationHeader 
+        title={t('personality.test.title')}
+        activeNavId="test"
+      />
 
       {error && (
         <div className="fixed top-[73px] left-0 right-0 z-20 bg-red-50 border-b border-red-200">
@@ -194,7 +167,6 @@ export default function PersonalityTest() {
       )}
 
       <div className="max-w-2xl mx-auto px-4">
-        {/* Fixed Progress Section */}
         <div className="fixed top-[73px] left-0 right-0 z-10 bg-white border-b">
           <div className="max-w-2xl mx-auto px-4 py-4">
             <div className="flex items-center justify-between mb-2">
@@ -217,7 +189,6 @@ export default function PersonalityTest() {
           </div>
         </div>
 
-        {/* Scrollable Questions Section */}
         <div className="mt-[160px] mb-[100px] space-y-6">
           {currentQuestions.map((question, index) => {
             const answer = answers.find(a => a.questionId === question.id);
@@ -269,7 +240,6 @@ export default function PersonalityTest() {
           })}
         </div>
 
-        {/* Fixed Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t">
           <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between">
             <button
@@ -294,8 +264,17 @@ export default function PersonalityTest() {
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
-              {isSubmitting ? t('common.processing') : currentSection === SECTIONS.length - 1 ? t('common.complete') : t('common.next')}
-              {!isSubmitting && currentSection < SECTIONS.length - 1 && <ArrowRight className="w-5 h-5" />}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  {t('common.processing')}
+                </>
+              ) : (
+                <>
+                  {currentSection === SECTIONS.length - 1 ? t('common.complete') : t('common.next')}
+                  {currentSection < SECTIONS.length - 1 && <ArrowRight className="w-5 h-5" />}
+                </>
+              )}
             </button>
           </div>
         </div>

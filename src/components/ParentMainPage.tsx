@@ -8,11 +8,13 @@ import {
   Loader2,
   FileText,
   X,
-  AlertCircle
+  AlertCircle,
+  UserCircle
 } from 'lucide-react';
 import UserHeader from './UserHeader';
 import { useLocale } from '../contexts/LocaleContext';
-import type { User } from '../types';
+import { fetchApi } from '../utils/api';
+import type { User, Student } from '../types';
 
 interface Message {
   id: string;
@@ -30,16 +32,38 @@ export default function ParentMainPage() {
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [childInfo, setChildInfo] = useState<Student | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchChildInfo = async () => {
+      if (!user.familyInfo?.childId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await fetchApi(`/users/${user.familyInfo.childId}`);
+        setChildInfo(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t('common.noData'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChildInfo();
+  }, [user.familyInfo?.childId, t]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
-    // 초기 인사 메시지
     setMessages([
       {
         id: '1',
@@ -54,7 +78,6 @@ export default function ParentMainPage() {
     scrollToBottom();
   }, [messages]);
 
-  // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -77,11 +100,8 @@ export default function ParentMainPage() {
 
   const sendMessageToServer = async (message: string): Promise<string> => {
     try {
-      const response = await fetch('/api/parents/chat', {
+      const response = await fetchApi('/parents/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           userId: user.id,
           childId: user.familyInfo?.childId,
@@ -89,16 +109,7 @@ export default function ParentMainPage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(t('student.chatbot.error'));
-      }
-
-      const data = await response.json();
-      if (!data.response) {
-        throw new Error(t('student.chatbot.error'));
-      }
-
-      return data.response.replace(/^"|"$/g, '');
+      return response.response.replace(/^"|"$/g, '');
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
@@ -112,7 +123,6 @@ export default function ParentMainPage() {
     setNewMessage('');
     setIsTyping(true);
 
-    // Add user message immediately
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -122,10 +132,8 @@ export default function ParentMainPage() {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      // Send message to server and get response
       const botResponse = await sendMessageToServer(messageContent);
       
-      // Add bot response
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         type: 'bot',
@@ -133,11 +141,10 @@ export default function ParentMainPage() {
         timestamp: new Date()
       }]);
     } catch (error) {
-      // Add error message
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         type: 'bot',
-        content: t('student.chatbot.error'),
+        content: t('parent.chatbot.error'),
         timestamp: new Date(),
         error: true
       }]);
@@ -161,37 +168,42 @@ export default function ParentMainPage() {
       description: t('parent.menu.report.desc'),
       icon: <FileText className="w-5 h-5" />,
       onClick: () => {
-        if (user.personalityResult) {
+        if (childInfo?.personalityResult) {
           const mockReport = {
-            id: `${user.familyInfo?.childId}-${new Date().toISOString().split('T')[0]}`,
-            studentId: user.familyInfo?.childId,
-            testDate: new Date().toISOString().split('T')[0],
-            result: user.personalityResult
+            id: `${childInfo.id}-${childInfo.personalityResult.diagnosisDate || new Date().toISOString().split('T')[0]}`,
+            studentId: childInfo.id,
+            testDate: childInfo.personalityResult.diagnosisDate || new Date().toISOString().split('T')[0],
+            result: {
+              primaryType: childInfo.personalityResult.primaryType,
+              secondaryType: childInfo.personalityResult.secondaryType
+            }
           };
           navigate('/personality-report', { 
             state: { 
-              student: {
-                id: user.familyInfo?.childId,
-                name: user.familyInfo?.childName,
-                personalityResult: user.personalityResult
-              },
+              student: childInfo,
               report: mockReport
             } 
           });
         }
         setIsMenuOpen(false);
       },
-      disabled: !user.personalityResult
+      disabled: !childInfo?.personalityResult
     }
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-blue-600">{t('common.processing')}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 flex flex-col">
-      {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            {/* 햄버거 메뉴 */}
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -205,7 +217,6 @@ export default function ParentMainPage() {
                 )}
               </button>
 
-              {/* 메뉴 드롭다운 */}
               {isMenuOpen && (
                 <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50">
                   {menuItems.map((item) => (
@@ -235,9 +246,26 @@ export default function ParentMainPage() {
         </div>
       </div>
 
-      {/* Chat Container */}
+      {childInfo && (
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center gap-4">
+              <div className="bg-white/80 backdrop-blur-sm p-2.5 rounded-full shadow-sm border border-purple-100">
+                <UserCircle className="w-6 h-6 text-purple-600" />
+              </div>
+              <div className="flex flex-col">
+                <h2 className="text-sm font-medium text-purple-600">{t('parent.childInfo')}</h2>
+                <p className="text-gray-900 font-medium">{childInfo.name}</p>
+                {childInfo.admissionDate && (
+                  <p className="text-sm text-gray-500">{t('auth.signup.admissionDate')}: {childInfo.admissionDate}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 max-w-3xl w-full mx-auto px-4 py-6 overflow-hidden flex flex-col">
-        {/* Messages */}
         <div className="flex-1 overflow-y-auto mb-4 space-y-4">
           {messages.map((message) => (
             <div
@@ -288,7 +316,6 @@ export default function ParentMainPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
         <div className="bg-white rounded-2xl shadow-lg p-4">
           <div className="flex items-end gap-2">
             <div className="flex-1">
@@ -297,7 +324,7 @@ export default function ParentMainPage() {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder={t('student.chatbot.placeholder')}
+                placeholder={t('parent.chatbot.placeholder')}
                 className="w-full resize-none rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent p-3 max-h-32"
                 rows={1}
                 style={{

@@ -1,14 +1,11 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, 
   Flower2, 
   Apple, 
   Grape, 
   Laptop, 
   Clock,
-  User,
-  Calendar,
   Brain,
   GraduationCap,
   Target,
@@ -17,9 +14,9 @@ import {
   CheckCircle2,
   Cherry
 } from 'lucide-react';
-import UserHeader from './UserHeader';
-import type { PersonalityReport, Student } from '../types';
 import { useLocale } from '../contexts/LocaleContext';
+import NavigationHeader from './shared/NavigationHeader';
+import type { PersonalityReport, Student } from '../types';
 
 const getPersonalityIcon = (type: string) => {
   switch (type) {
@@ -59,7 +56,6 @@ export default function PersonalityReportDetail() {
   const isStudent = user.role === 2;
   const { t } = useLocale();
 
-  // 필요한 데이터가 없으면 에러 메시지 표시
   if (!report?.result || !student) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -68,15 +64,6 @@ export default function PersonalityReportDetail() {
     );
   }
 
-  const handleBack = () => {
-    if (isStudent) {
-      navigate('/student-main');
-    } else {
-      navigate(-1);
-    }
-  };
-
-  // Personality type descriptions
   const typeDescriptions: { [key: string]: string } = {
     'さくら': t('personality.type.sakura.desc'),
     '사쿠라': t('personality.type.sakura.desc'),
@@ -92,7 +79,6 @@ export default function PersonalityReportDetail() {
     '아날로그': t('personality.type.analog.desc')
   };
 
-  // Learning recommendations
   const learningRecommendations: { [key: string]: string[] } = {
     'さくら': [
       t('personality.type.sakura.rec1'),
@@ -163,41 +149,25 @@ export default function PersonalityReportDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleBack}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <h1 className="text-2xl font-bold text-gray-800">{t('report.detail.title')}</h1>
-            </div>
-            <UserHeader name={user.name} role={user.role} />
-          </div>
-        </div>
-      </div>
+      <NavigationHeader 
+        title={t('report.detail.title')}
+        activeNavId="report"
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-lg p-6 space-y-8">
-          {/* Basic Information */}
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-4">
-                <User className="w-6 h-6 text-blue-600" />
+                <Brain className="w-6 h-6 text-blue-600" />
                 <h2 className="text-lg font-semibold text-gray-800">{t('report.detail.studentInfo')}</h2>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-gray-500" />
-                  <p className="text-gray-600">{t('common.name')}: {student.name}</p>
+                  <span className="text-gray-600">{t('common.name')}: {student.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-500" />
-                  <p className="text-gray-600">{t('report.detail.testDate')}: {report.testDate}</p>
+                  <span className="text-gray-600">{t('report.detail.testDate')}: {report.testDate}</span>
                 </div>
               </div>
             </div>
@@ -221,7 +191,6 @@ export default function PersonalityReportDetail() {
             </div>
           </div>
 
-          {/* Personality Analysis */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <Target className="w-6 h-6 text-blue-600" />
@@ -257,7 +226,6 @@ export default function PersonalityReportDetail() {
             </div>
           </div>
 
-          {/* Learning Recommendations */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-6 h-6 text-blue-600" />

@@ -16,6 +16,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import UserHeader from './UserHeader';
 import { useLocale } from '../contexts/LocaleContext';
+import { fetchApi } from '../utils/api';
 import type { Student, RiskHistory } from '../types';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -41,11 +42,9 @@ export default function RiskFactorManagement() {
   }
 
   const sortedRiskHistory = [...(student.riskInfo?.RiskHistory || [])].sort((a, b) => {
-    // 미해결 항목을 먼저 표시
     if (a.Status !== b.Status) {
       return a.Status === '00' ? -1 : 1;
     }
-    // 같은 상태 내에서는 최신순으로 정렬
     return new Date(b.Date).getTime() - new Date(a.Date).getTime();
   });
 
@@ -58,12 +57,12 @@ export default function RiskFactorManagement() {
       {
         data: [resolvedCount, unresolvedCount],
         backgroundColor: [
-          'rgba(34, 197, 94, 0.2)', // green-500 with opacity
-          'rgba(239, 68, 68, 0.2)', // red-500 with opacity
+          'rgba(34, 197, 94, 0.2)',
+          'rgba(239, 68, 68, 0.2)',
         ],
         borderColor: [
-          'rgb(34, 197, 94)', // green-500
-          'rgb(239, 68, 68)', // red-500
+          'rgb(34, 197, 94)',
+          'rgb(239, 68, 68)',
         ],
         borderWidth: 1,
       },
@@ -105,26 +104,17 @@ export default function RiskFactorManagement() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/students/${student.id}/risks/${selectedRiskId}/resolve`, {
+      await fetchApi(`/students/${student.id}/risks/${selectedRiskId}/resolve`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           resolutionComment: resolutionComment.trim(),
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(t('risk.updateFailed'));
-      }
-
-      // 성공 시 모달 닫고 상태 초기화
       setShowCommentModal(false);
       setSelectedRiskId(null);
       setResolutionComment('');
       
-      // 페이지 새로고침
       window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('risk.updateFailed'));
@@ -213,7 +203,6 @@ export default function RiskFactorManagement() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 학생 및 학부모 정보 */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -254,7 +243,6 @@ export default function RiskFactorManagement() {
           </div>
         </div>
 
-        {/* 위험요소 통계 */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-red-100 rounded-full p-2">
@@ -264,12 +252,10 @@ export default function RiskFactorManagement() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {/* 차트 */}
             <div className="relative">
               <div className="w-full max-w-[300px] mx-auto">
                 <Pie data={chartData} options={chartOptions} />
               </div>
-              {/* 중앙 총계 */}
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
                 <div className="text-2xl font-bold text-gray-800">
                   {student.riskInfo?.TotalRiskCount || 0}
@@ -278,7 +264,6 @@ export default function RiskFactorManagement() {
               </div>
             </div>
 
-            {/* 상세 통계 */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-red-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
@@ -321,7 +306,6 @@ export default function RiskFactorManagement() {
           </div>
         </div>
 
-        {/* 위험요소 목록 */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
